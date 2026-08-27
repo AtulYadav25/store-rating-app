@@ -11,3 +11,29 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  ratings Rating[]
+}
+
+model Store {
+  id      String   @id @default(uuid())
+  name    String
+  ratings Rating[]
+}
+
+model Rating {
+  id      String @id @default(uuid())
+
+  userId  String
+  storeId String
+  rating  Int
+
+  user    User  @relation(fields: [userId], references: [id])
+  store   Store @relation(fields: [storeId], references: [id])
+}
