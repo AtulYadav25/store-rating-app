@@ -16,6 +16,7 @@ model User {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
+  password  String
   createdAt DateTime @default(now())
 
   ratings Rating[]
@@ -28,12 +29,12 @@ model Store {
 }
 
 model Rating {
-  id      String @id @default(uuid())
+  id String @id @default(uuid())
 
   userId  String
   storeId String
   rating  Int
 
-  user    User  @relation(fields: [userId], references: [id])
-  store   Store @relation(fields: [storeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+  store Store @relation(fields: [storeId], references: [id])
 }

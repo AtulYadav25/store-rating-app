@@ -1,6 +1,9 @@
 import express, { type Express } from 'express';
 import dotenv from 'dotenv';
 
+//Routes
+import authRoutes from './routes/auth.routes.js'
+
 dotenv.config();
 const app: Express = express();
 
@@ -10,5 +13,8 @@ app.use(express.json());
 app.get('/', async (req, res) => {
     res.json({ message: 'Welcome to Store Rating App API' });
 });
+
+app.use("/api/v1/auth", authRoutes);
+
 
 export default app;
