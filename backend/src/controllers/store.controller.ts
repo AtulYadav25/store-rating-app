@@ -163,28 +163,3 @@ export const addStore = async (req: Request, res: Response) => {
         return errorResponse(res, "Failed to add store", 500, error);
     }
 };
-
-// Route to get stores owned by this user - store owner
-export const getMyStores = async (req: Request, res: Response) => {
-    try {
-        const ownerId = req.user?.id;
-
-        if (!ownerId) {
-            return errorResponse(res, "Unauthorized", 401);
-        }
-
-        const stores = await prisma.store.findMany({
-            where: {
-                ownerId,
-            },
-            orderBy: {
-                createdAt: "desc",
-            },
-        });
-
-        return successResponse(res, stores, "My stores fetched successfully", 200);
-
-    } catch (error) {
-        return errorResponse(res, "Failed to fetch store owner stores", 500, error);
-    }
-};
