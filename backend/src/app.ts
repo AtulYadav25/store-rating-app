@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import storeRoutes from './routes/store.routes.js';
 import ratingRoutes from './routes/rating.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 
 dotenv.config();
 const app: Express = express();
@@ -22,6 +23,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/store", storeRoutes);
 app.use("/api/v1/rating", ratingRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
 
 
 export default app;
