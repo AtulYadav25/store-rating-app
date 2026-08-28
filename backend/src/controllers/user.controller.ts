@@ -2,7 +2,40 @@ import { prisma } from "../lib/prisma.js";
 import { errorResponse, successResponse } from "../utils/responseHandler.js";
 import type { Request, Response } from "express";
 import bcrypt from 'bcrypt';
-import { validPassword } from "../validators/auth.types.js";
+import { signUpSchema, validPassword } from "../validators/auth.types.js";
+
+export const addUser = async (req: Request, res: Response) => {
+    try {
+        const { name, email, address, password, role } = signUpSchema.parse(req.body);
+
+        //Check if email already exists
+        const isUserExist = await prisma.user.findUnique({
+            where: { email },
+            select: { email: true }
+        });
+        if (isUserExist) {
+            return errorResponse(res, "User already exists", 409);
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        //ASSUMPTIONS: Admin creates the user with specified role
+        const newUser = await prisma.user.create({
+            data: {
+                email,
+                password: hashedPassword,
+                name,
+                address,
+                role
+            }
+        });
+
+        successResponse(res, { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role }, "User created successfully", 201);
+
+    } catch (error) {
+        errorResponse(res, "Failed to create user", 500, error);
+    }
+}
 
 export const updatePassword = async (req: Request, res: Response) => {
     try {

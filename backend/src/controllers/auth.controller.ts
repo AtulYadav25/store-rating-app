@@ -1,15 +1,14 @@
 import type { Response, Request } from "express";
 import { loginSchema, signUpSchema, type PublicUser } from "../validators/auth.types.js";
 import { prisma } from "../lib/prisma.js";
-import { ROLES } from "../constants/ROLES.js";
 import { errorResponse, successResponse } from "../utils/responseHandler.js";
 import bcrypt from 'bcrypt';
 import { generateToken, durationToMs } from "../utils/jwt.js";
 import { config } from "../config/env.js";
+import { ROLES, type UserRole } from "../constants/ROLES.js";
 
 export const register = async (req: Request, res: Response) => {
     try {
-
         //Validate inputs
         const { email, password, name, address } = signUpSchema.parse(req.body);
 
@@ -25,7 +24,6 @@ export const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         //ASSUMPTIONS: I assumed here we have the user which has authenticated email and it is verified
-
         const newUser = await prisma.user.create({
             data: {
                 email,
@@ -34,12 +32,12 @@ export const register = async (req: Request, res: Response) => {
                 address,
                 role: ROLES.USER
             }
-        })
+        });
 
         const token = generateToken({
             id: newUser.id,
             email: newUser.email,
-            role: newUser.role,
+            role: newUser.role as UserRole,
         });
 
         res.cookie("token", token, {
@@ -48,21 +46,18 @@ export const register = async (req: Request, res: Response) => {
             maxAge: durationToMs(config.JWT_EXPIRES_IN)
         });
 
-        successResponse<{ email: String, name: String }>(res, {
+        successResponse<{ email: string; name: string }>(res, {
             email,
             name
         }, "User registered successfully", 201);
 
-
     } catch (error) {
         errorResponse(res, "Something went wrong", 500, error);
-
     }
 }
 
 export const login = async (req: Request, res: Response) => {
     try {
-
         //Validate Body
         const { email, password } = loginSchema.parse(req.body);
 
@@ -93,7 +88,7 @@ export const login = async (req: Request, res: Response) => {
         const token = generateToken({
             id: user.id,
             email: user.email,
-            role: user.role,
+            role: user.role as UserRole,
         });
 
         res.cookie("token", token, {

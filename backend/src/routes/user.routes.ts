@@ -1,9 +1,13 @@
-import { updatePassword } from "../controllers/user.controller.js";
+import { addUser, updatePassword } from "../controllers/user.controller.js";
 import { Router } from "express";
-import { protectRoute } from "../middlewares/auth.js";
+import { protectRoute, hasRole } from "../middlewares/auth.js";
+import { ROLES } from "../constants/ROLES.js";
 
 const router: Router = Router();
 
-router.post("/update-password", protectRoute, updatePassword)
+// Admin Routes
+router.post("/user", protectRoute, hasRole(ROLES.ADMIN), addUser);
+
+router.post("/update-password", protectRoute, updatePassword);
 
 export default router;

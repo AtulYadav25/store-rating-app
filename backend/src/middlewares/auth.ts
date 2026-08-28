@@ -2,6 +2,7 @@ import { errorResponse } from "../utils/responseHandler.js";
 import { verifyToken } from "../utils/jwt.js";
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import type { UserRole } from "../constants/ROLES.js";
 
 export const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -35,4 +36,18 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
         console.log(error);
         errorResponse(res, "Something went wrong", 500, error);
     }
-}
+};
+
+export const hasRole = (...allowedRoles: UserRole[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (!req.user || !req.user.role) {
+            return errorResponse(res, "Unauthorized", 401);
+        }
+
+        if (!allowedRoles.includes(req.user.role)) {
+            return errorResponse(res, "Insufficient permissions", 403);
+        }
+
+        next();
+    };
+};
