@@ -23,15 +23,21 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   stores    Store[]
+
+  @@index([name])
+  @@index([email])
+  @@index([role])
 }
 
 model Store {
   id      String @id @default(uuid())
   name    String
   address String
+  email   String @unique
+  image   String?
 
-  ownerId String
-  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String?
+  owner   User?   @relation(fields: [ownerId], references: [id])
 
   avgRating   Float    @default(0)
   ratingCount Int      @default(0)
@@ -39,6 +45,10 @@ model Store {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([email])
+  @@index([address])
 }
 
 model Rating {
@@ -53,4 +63,5 @@ model Rating {
   store Store @relation(fields: [storeId], references: [id])
 
   @@unique([userId, storeId])
+  @@index([storeId, createdAt])
 }
