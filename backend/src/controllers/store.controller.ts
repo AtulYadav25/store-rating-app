@@ -33,7 +33,6 @@ export const getStores = async (req: Request, res: Response) => {
             });
         }
 
-        // Search by email
         if (typeof email === "string" && email.trim()) {
             conditions.push({
                 email: {
@@ -44,13 +43,11 @@ export const getStores = async (req: Request, res: Response) => {
         }
 
         if (typeof address === "string" && address.trim()) {
-            // Split address into individual search terms
             const addressTerms = address
                 .trim()
                 .split(/[,\s]+/)
                 .filter(Boolean);
 
-            // Every search term must exist somewhere in the address
             addressTerms.forEach((term) => {
                 conditions.push({
                     address: {
@@ -63,7 +60,6 @@ export const getStores = async (req: Request, res: Response) => {
 
         const where: Prisma.StoreWhereInput = conditions.length > 0 ? { AND: conditions } : {};
 
-        // Get stores
         const stores = await prisma.store.findMany({
             where,
             take: limitNumber,
@@ -89,7 +85,6 @@ export const getStore = async (req: Request, res: Response) => {
             return errorResponse(res, "Invalid store ID", 400);
         }
 
-        //check if store exists
         const store = await prisma.store.findUnique({
             where: {
                 id,
@@ -124,7 +119,7 @@ export const addStore = async (req: Request, res: Response) => {
             return errorResponse(res, "Name, email, and address are required", 400);
         }
 
-        // Validate field lengths according to project specifications
+
         if (name.trim().length < 20 || name.trim().length > 60) {
             return errorResponse(res, "Store name must be between 20 and 60 characters", 400);
         }
@@ -133,7 +128,6 @@ export const addStore = async (req: Request, res: Response) => {
             return errorResponse(res, "Address must not exceed 400 characters", 400);
         }
 
-        // Check if store with this email already exists
         const storeExists = await prisma.store.findUnique({
             where: {
                 email: email.trim().toLowerCase(),
@@ -144,7 +138,6 @@ export const addStore = async (req: Request, res: Response) => {
             return errorResponse(res, "Store with this email already exists", 400);
         }
 
-        // If ownerId is provided, verify that owner user exists
         if (ownerId) {
             const owner = await prisma.user.findUnique({
                 where: { id: ownerId },
@@ -168,5 +161,30 @@ export const addStore = async (req: Request, res: Response) => {
 
     } catch (error) {
         return errorResponse(res, "Failed to add store", 500, error);
+    }
+};
+
+// Route to get stores owned by this user - store owner
+export const getMyStores = async (req: Request, res: Response) => {
+    try {
+        const ownerId = req.user?.id;
+
+        if (!ownerId) {
+            return errorResponse(res, "Unauthorized", 401);
+        }
+
+        const stores = await prisma.store.findMany({
+            where: {
+                ownerId,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        return successResponse(res, stores, "My stores fetched successfully", 200);
+
+    } catch (error) {
+        return errorResponse(res, "Failed to fetch store owner stores", 500, error);
     }
 };

@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { protectRoute, hasRole } from "../middlewares/auth.js";
-import { ROLES } from "../constants/ROLES.js";
+import { protectRoute } from "../middlewares/auth.js";
 import {
     deleteRating,
     getStoreRatings,
