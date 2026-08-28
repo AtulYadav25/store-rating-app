@@ -133,3 +133,67 @@ export const getUser = async (req: Request, res: Response) => {
         return errorResponse(res, "Failed to fetch user details", 500, error);
     }
 };
+
+
+
+// Store Owner Controllers
+
+export const getUsersWithRatings = async (req: Request, res: Response) => {
+    try {
+        // View a list of users who have submitted ratings for their store(s).
+        const ownerId = req.user?.id;
+
+        if (!ownerId) {
+            return errorResponse(res, "Unauthorized", 401);
+        }
+
+        const { page = 1, limit = 20 } = req.query;
+
+        const pageNumber = parseInt(page as string, 10);
+        const limitNumber = parseInt(limit as string, 10);
+
+        if (Number.isNaN(pageNumber) || Number.isNaN(limitNumber) || pageNumber < 1 || limitNumber < 1) {
+            return errorResponse(res, "Invalid pagination parameters", 400);
+        }
+
+        const ratings = await prisma.rating.findMany({
+            where: {
+                store: {
+                    ownerId,
+                },
+            },
+            select: {
+                id: true,
+                rating: true,
+                createdAt: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        address: true,
+                    },
+                },
+                store: {
+                    select: {
+                        id: true,
+                        name: true,
+                        address: true,
+                        avgRating: true,
+                        ratingCount: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+            take: limitNumber,
+            skip: (pageNumber - 1) * limitNumber,
+        });
+
+        return paginationResponse(res, ratings, pageNumber, limitNumber);
+
+    } catch (error) {
+        return errorResponse(res, "Failed to fetch store ratings", 500, error);
+    }
+};
