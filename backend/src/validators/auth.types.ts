@@ -13,4 +13,19 @@ export const signUpSchema = z.object({
         .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character"),
 });
 
+export const loginSchema = z.object({
+    email: z.email("Invalid Email"),
+    password: z.string(),
+});
+
+export const publicUserSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.email("Invalid Email"),
+    address: z.string(),
+    role: z.string(),
+});
+
 export type SignUpInput = z.infer<typeof signUpSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type PublicUser = z.infer<typeof publicUserSchema>;
