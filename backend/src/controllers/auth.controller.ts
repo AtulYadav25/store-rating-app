@@ -104,6 +104,43 @@ export const login = async (req: Request, res: Response) => {
     }
 }
 
+export const getMe = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+
+        if (!user) {
+            return errorResponse(res, 'User Not Authenticated', 401)
+        }
+
+        //fetch user from DB to get all details
+        const userData = await prisma.user.findUnique({
+            where: { id: user?.id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                address: true,
+                role: true,
+            },
+        });
+
+        if (!userData) {
+            return errorResponse(res, "User not found", 404);
+        }
+
+        const publicUser: PublicUser = {
+            id: String(userData.id),
+            name: userData.name,
+            email: userData.email,
+            address: userData.address,
+            role: userData.role,
+        };
+        successResponse<PublicUser>(res, publicUser, "User fetched successfully", 200);
+    } catch (error) {
+        errorResponse(res, "Something went wrong", 500, error);
+    }
+}
+
 export const logout = async (req: Request, res: Response) => {
     try {
         res.cookie("token", "", {
