@@ -4,7 +4,8 @@ import { prisma } from "../lib/prisma.js";
 import { ROLES } from "../constants/ROLES.js";
 import { errorResponse, successResponse } from "../utils/responseHandler.js";
 import bcrypt from 'bcrypt';
-import { generateToken } from "../utils/jwt.js";
+import { generateToken, durationToMs } from "../utils/jwt.js";
+import { config } from "../config/env.js";
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -44,6 +45,7 @@ export const register = async (req: Request, res: Response) => {
         res.cookie("token", token, {
             httpOnly: true,
             secure: true,
+            maxAge: durationToMs(config.JWT_EXPIRES_IN)
         });
 
         successResponse<{ email: String, name: String }>(res, {
@@ -97,6 +99,7 @@ export const login = async (req: Request, res: Response) => {
         res.cookie("token", token, {
             httpOnly: true,
             secure: true,
+            maxAge: durationToMs(config.JWT_EXPIRES_IN),
         });
 
         successResponse<PublicUser>(res, publicUser, "Login successful", 200);
