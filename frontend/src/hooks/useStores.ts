@@ -3,8 +3,10 @@ import {
   getStores,
   getStore,
   addStore,
+  editStore,
   type GetStoresParams,
   type AddStoreData,
+  type EditStoreData,
 } from "../api/store.api";
 import { DASHBOARD_QUERY_KEY } from "./useDashboard";
 
@@ -37,6 +39,29 @@ export const useAddStore = () => {
     mutationFn: (data: AddStoreData) => addStore(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: STORES_QUERY_KEY });
+      queryClient.invalidateQueries({
+        queryKey: [...DASHBOARD_QUERY_KEY, "admin", "stats"],
+      });
+    },
+  });
+};
+
+export const useEditStore = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      storeId,
+      data,
+    }: {
+      storeId: string;
+      data: EditStoreData;
+    }) => editStore(storeId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: STORES_QUERY_KEY });
+      queryClient.invalidateQueries({
+        queryKey: [...STORES_QUERY_KEY, variables.storeId],
+      });
       queryClient.invalidateQueries({
         queryKey: [...DASHBOARD_QUERY_KEY, "admin", "stats"],
       });

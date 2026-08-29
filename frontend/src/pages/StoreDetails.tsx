@@ -1,7 +1,8 @@
-import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useStore } from "../hooks/useStores";
 import { useStoreRatings, useSubmitRating } from "../hooks/useRatings";
+import { useCurrentUser } from "../hooks/useAuth";
+import { ROLES } from "../constants/ROLES";
 import { AspectRatio } from "../components/ui/aspect-ratio";
 import {
     Card,
@@ -22,13 +23,16 @@ import {
     ArrowLeft,
     Calendar,
     AlertCircle,
+    Edit,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 const RATINGS_PAGE_LIMIT = 5;
 
 const StoreDetails: React.FC = () => {
     const { storeId = "" } = useParams<{ storeId: string }>();
+    const { data: currentUser } = useCurrentUser();
 
     // Ratings pagination state
     const [ratingPage, setRatingPage] = useState(1);
@@ -151,8 +155,8 @@ const StoreDetails: React.FC = () => {
 
     return (
         <main className="flex-1 mx-auto w-full max-w-3xl px-4 sm:px-6 py-8 space-y-6">
-            {/* Back Navigation */}
-            <div>
+            {/* Top Navigation Row */}
+            <div className="flex items-center justify-between">
                 <Link
                     to="/"
                     className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
@@ -160,6 +164,19 @@ const StoreDetails: React.FC = () => {
                     <ArrowLeft className="h-4 w-4" />
                     <span>Back to Stores</span>
                 </Link>
+
+                {currentUser?.role === ROLES.ADMIN && (
+                    <Link to={`/dashboard/admin/edit-store/${storeId}`}>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 border-slate-300 bg-white hover:bg-slate-50 shadow-xs"
+                        >
+                            <Edit className="h-3.5 w-3.5 text-primary" />
+                            <span>Edit Store</span>
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             {/* Main Store Information Card */}

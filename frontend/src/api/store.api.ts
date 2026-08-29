@@ -9,6 +9,11 @@ export interface Store {
   avgRating: number;
   ratingCount: number;
   ownerId?: string | null;
+  owner?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
   userRating?: number | null;
   createdAt?: string;
   updatedAt?: string;
@@ -24,6 +29,14 @@ export interface AddStoreData {
   name: string;
   email: string;
   address: string;
+  image?: string | null;
+  ownerEmail?: string | null;
+}
+
+export interface EditStoreData {
+  name?: string;
+  email?: string;
+  address?: string;
   image?: string | null;
   ownerEmail?: string | null;
 }
@@ -51,5 +64,13 @@ export const getStore = async (id: string): Promise<StoreDetailResponse> => {
 
 export const addStore = async (data: AddStoreData): Promise<APIResponse<Store>> => {
   const response = await api.post<APIResponse<Store>>("/store", data);
+  return response.data;
+};
+
+export const editStore = async (
+  storeId: string,
+  data: EditStoreData
+): Promise<APIResponse<Store>> => {
+  const response = await api.put<APIResponse<Store>>(`/store/${storeId}`, data);
   return response.data;
 };
