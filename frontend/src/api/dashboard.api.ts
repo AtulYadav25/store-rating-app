@@ -1,4 +1,5 @@
-import { api, type APIResponse } from "./axios";
+import { api, type APIResponse, type PaginatedAPIResponse } from "./axios";
+import type { UserRole } from "../constants/ROLES";
 
 export interface AdminDashboardStats {
   totalUsers: number;
@@ -6,11 +7,64 @@ export interface AdminDashboardStats {
   totalRatings: number;
 }
 
+export interface DashboardUser {
+  id: string;
+  name: string;
+  email: string;
+  address: string;
+  role: UserRole;
+  createdAt: string;
+}
+
+export interface GetAdminUsersParams {
+  page?: number;
+  limit?: number;
+  role?: UserRole;
+  name?: string;
+  email?: string;
+  address?: string;
+}
+
+export type AdminUsersResponse = PaginatedAPIResponse<DashboardUser>;
+
 export const getAdminDashboardStats = async (): Promise<
   APIResponse<AdminDashboardStats>
 > => {
   const response = await api.get<APIResponse<AdminDashboardStats>>(
     "/dashboard/admin"
+  );
+  return response.data;
+};
+
+export const getAdminUsers = async (
+  params: GetAdminUsersParams = {}
+): Promise<AdminUsersResponse> => {
+  const { page = 1, limit = 10, role, name, email, address } = params;
+  const searchParams = new URLSearchParams();
+  searchParams.set("page", String(page));
+  searchParams.set("limit", String(limit));
+  if (role) searchParams.set("role", role);
+  if (name?.trim()) searchParams.set("name", name.trim());
+  if (email?.trim()) searchParams.set("email", email.trim());
+  if (address?.trim()) searchParams.set("address", address.trim());
+
+  const response = await api.get<AdminUsersResponse>(
+    `/dashboard/admin/users?${searchParams.toString()}`
+  );
+  return response.data;
+};
+
+export interface UpdateUserRoleData {
+  userId: string;
+  role: UserRole;
+}
+
+export const updateUserRole = async (
+  data: UpdateUserRoleData
+): Promise<APIResponse<DashboardUser>> => {
+  const response = await api.patch<APIResponse<DashboardUser>>(
+    "/user/update-role",
+    data
   );
   return response.data;
 };

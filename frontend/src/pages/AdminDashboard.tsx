@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAdminDashboardStats } from "../hooks/useDashboard";
 import {
   Card,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const {
     data: statsResponse,
     isLoading,
@@ -37,7 +39,7 @@ const AdminDashboard: React.FC = () => {
       iconBg: "bg-blue-50 text-blue-600 border-blue-200/60",
       accentHover: "group-hover:border-blue-300 group-hover:shadow-blue-500/5",
       onClick: () => {
-        console.log("Action: Show All Users");
+        navigate("/dashboard/admin/users");
       },
     },
     {

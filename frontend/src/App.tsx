@@ -10,6 +10,7 @@ import UpdatePassword from './pages/UpdatePassword'
 import StoreDetails from './pages/StoreDetails'
 import { ROLES } from './constants/ROLES'
 import AdminDashboard from './pages/AdminDashboard'
+import AllUsers from './pages/AllUsers'
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard/admin/users" element={<AllUsers />} />
             <Route path="/dashboard/admin/add-user" element={<AdminDashboard />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={[ROLES.STORE_OWNER]} />}>
