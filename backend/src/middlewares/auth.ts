@@ -1,5 +1,6 @@
 import { errorResponse } from "../utils/responseHandler.js";
 import { verifyToken } from "../utils/jwt.js";
+import { prisma } from "../lib/prisma.js";
 import type { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { UserRole } from "../constants/ROLES.js";
@@ -36,15 +37,32 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
 };
 
 export const hasRole = (...allowedRoles: UserRole[]) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        if (!req.user || !req.user.role) {
-            return errorResponse(res, "Unauthorized", 401);
-        }
+    return async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            if (!req.user?.id) {
+                return errorResponse(res, "Unauthorized", 401);
+            }
 
-        if (!allowedRoles.includes(req.user.role)) {
-            return errorResponse(res, "Insufficient permissions", 403);
-        }
+            const user = await prisma.user.findUnique({
+                where: { id: req.user.id },
+                select: { id: true, role: true },
+            });
 
-        next();
+            if (!user) {
+                return errorResponse(res, "User not found", 404);
+            }
+
+            const currentRole = user.role as UserRole;
+            req.user.role = currentRole;
+
+            if (!allowedRoles.includes(currentRole)) {
+                return errorResponse(res, "Insufficient permissions", 403);
+            }
+
+            next();
+        } catch (error) {
+            console.error("Role authorization error:", error);
+            return errorResponse(res, "Failed to verify user permissions", 500, error);
+        }
     };
 };
