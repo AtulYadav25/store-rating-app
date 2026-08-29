@@ -24,7 +24,7 @@ export const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         //ASSUMPTIONS: I assumed here we have the user which has authenticated email and it is verified
-        const newUser = await prisma.user.create({
+        await prisma.user.create({
             data: {
                 email,
                 password: hashedPassword,
@@ -32,18 +32,6 @@ export const register = async (req: Request, res: Response) => {
                 address,
                 role: ROLES.USER
             }
-        });
-
-        const token = generateToken({
-            id: newUser.id,
-            email: newUser.email,
-            role: newUser.role as UserRole,
-        });
-
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: true,
-            maxAge: durationToMs(config.JWT_EXPIRES_IN)
         });
 
         successResponse<{ email: string; name: string }>(res, {
@@ -97,7 +85,7 @@ export const login = async (req: Request, res: Response) => {
             maxAge: durationToMs(config.JWT_EXPIRES_IN),
         });
 
-        successResponse<PublicUser>(res, publicUser, "Login successful", 200);
+        successResponse<{ user: PublicUser }>(res, { user: publicUser }, "Login successful", 200);
 
     } catch (error) {
         errorResponse(res, "Something went wrong", 500, error);
@@ -135,7 +123,7 @@ export const getMe = async (req: Request, res: Response) => {
             address: userData.address,
             role: userData.role,
         };
-        successResponse<PublicUser>(res, publicUser, "User fetched successfully", 200);
+        successResponse<{ user: PublicUser }>(res, { user: publicUser }, "User fetched successfully", 200);
     } catch (error) {
         errorResponse(res, "Something went wrong", 500, error);
     }

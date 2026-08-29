@@ -25,5 +25,4 @@ app.use("/api/v1/store", storeRoutes);
 app.use("/api/v1/rating", ratingRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 
-
 export default app;
