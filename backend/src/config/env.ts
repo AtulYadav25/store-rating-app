@@ -13,6 +13,7 @@ const envSchema = z.object({
     DATABASE_URL: z.string(),
     JWT_SECRET: z.string(),
     JWT_EXPIRES_IN: z.string().default('7d'),
+    CLIENT_URL: z.string().default("http://localhost:5173")
 });
 
 const _env = envSchema.safeParse(process.env);

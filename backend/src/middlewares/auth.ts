@@ -6,17 +6,7 @@ import type { UserRole } from "../constants/ROLES.js";
 
 export const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const cookieHeader = req.headers.cookie;
-
-        if (!cookieHeader) {
-            return errorResponse(res, "Unauthorized", 401);
-        }
-
-        const token = cookieHeader
-            .split(";")
-            .map((c) => c.trim())
-            .find((row) => row.startsWith("token="))
-            ?.split("=")[1];
+        const { token } = req.cookies;
 
         if (!token) {
             return errorResponse(res, "Unauthorized", 401);
