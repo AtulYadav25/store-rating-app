@@ -7,6 +7,13 @@ export interface AdminDashboardStats {
   totalRatings: number;
 }
 
+export interface DashboardUserStore {
+  id: string;
+  name: string;
+  avgRating: number;
+  ratingCount: number;
+}
+
 export interface DashboardUser {
   id: string;
   name: string;
@@ -14,6 +21,7 @@ export interface DashboardUser {
   address: string;
   role: UserRole;
   createdAt: string;
+  stores?: DashboardUserStore[];
 }
 
 export interface GetAdminUsersParams {

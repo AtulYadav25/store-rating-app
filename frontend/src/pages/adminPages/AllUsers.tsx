@@ -26,7 +26,8 @@ import {
   User,
   RotateCcw,
   Mail,
-  MapPin
+  MapPin,
+  Star,
 } from "lucide-react";
 import { ROLES, type UserRole } from "../../constants/ROLES";
 import toast from "react-hot-toast";
@@ -361,6 +362,7 @@ const AllUsers: React.FC = () => {
                 <th className="py-3 px-4">Email</th>
                 <th className="py-3 px-4">Address</th>
                 <th className="py-3 px-4">Role</th>
+                <th className="py-3 px-4">Store Rating</th>
                 <th className="py-3 px-4">Joined Date</th>
                 <th className="py-3 px-4 sm:px-6 text-right">Actions</th>
               </tr>
@@ -385,6 +387,9 @@ const AllUsers: React.FC = () => {
                       <div className="h-5 w-16 bg-slate-100 rounded-full" />
                     </td>
                     <td className="py-4 px-4">
+                      <div className="h-5 w-20 bg-slate-100 rounded-md" />
+                    </td>
+                    <td className="py-4 px-4">
                       <div className="h-4 w-20 bg-slate-100 rounded" />
                     </td>
                     <td className="py-4 px-4 sm:px-6 text-right">
@@ -394,7 +399,7 @@ const AllUsers: React.FC = () => {
                 ))
               ) : isError ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
                     <p className="text-sm font-semibold text-destructive">
                       Error fetching users.
                     </p>
@@ -410,7 +415,7 @@ const AllUsers: React.FC = () => {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
                     <div className="flex justify-center mb-2">
                       <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
                         <Users className="h-5 w-5" />
@@ -459,6 +464,35 @@ const AllUsers: React.FC = () => {
                     {/* Role Badge */}
                     <td className="py-3.5 px-4">
                       {getRoleBadge(user.role)}
+                    </td>
+
+                    {/* Store Rating (For Store Owners) */}
+                    <td className="py-3.5 px-4">
+                      {user.role === ROLES.STORE_OWNER ? (
+                        user.stores && user.stores.length > 0 ? (
+                          <div className="flex flex-col gap-0.5">
+                            <div className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 font-semibold text-xs w-fit">
+                              <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                              <span>{user.stores[0].avgRating.toFixed(1)}</span>
+                              <span className="text-[10px] text-amber-600/80 font-normal">
+                                ({user.stores[0].ratingCount})
+                              </span>
+                            </div>
+                            <span
+                              className="text-[11px] text-slate-400 truncate max-w-[130px]"
+                              title={user.stores[0].name}
+                            >
+                              {user.stores[0].name}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 italic">
+                            No store linked
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-xs text-slate-300">—</span>
+                      )}
                     </td>
 
                     {/* Joined Date */}

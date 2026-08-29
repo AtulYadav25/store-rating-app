@@ -59,6 +59,14 @@ export const getUsers = async (req: Request, res: Response) => {
                 address: true,
                 role: true,
                 createdAt: true,
+                stores: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avgRating: true,
+                        ratingCount: true,
+                    },
+                },
             },
             orderBy: {
                 createdAt: "desc",
