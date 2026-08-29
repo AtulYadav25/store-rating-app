@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Navbar } from "../components/Navbar";
 import { StoreCard } from "../components/StoreCard";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -9,11 +8,9 @@ import { Search, ChevronLeft, ChevronRight, Store, X, AlertCircle, RefreshCw } f
 const STORES_PER_PAGE = 9;
 
 const Home: React.FC = () => {
-    // Input state for search field (updates as user types)
     const [searchInput, setSearchInput] = useState("");
-    // Active search query triggered only on search button click / submit
     const [activeSearch, setActiveSearch] = useState("");
-    // Current page state
+
     const [currentPage, setCurrentPage] = useState(1);
 
     // TanStack Query hook connected to backend API
@@ -65,12 +62,8 @@ const Home: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50/50 flex flex-col">
-            {/* 1. Reusable Navbar */}
-            <Navbar />
+        <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-            {/* Main Content Container */}
-            <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
                 {/* Header and Search Section */}
                 <div className="space-y-4">
                     <div>
@@ -237,7 +230,6 @@ const Home: React.FC = () => {
                     </div>
                 )}
             </main>
-        </div>
     );
 };
 

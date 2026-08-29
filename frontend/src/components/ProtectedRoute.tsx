@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 import { useCurrentUser } from "../hooks/useAuth";
 import type { UserRole } from "../constants/ROLES";
+import { Navbar } from "./Navbar";
 
 interface ProtectedRouteProps {
     allowedRoles?: UserRole[];
@@ -41,7 +42,13 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps = {}) {
         );
     }
 
-    return <Outlet />;
+    return (
+        <div className="min-h-screen bg-slate-50/50 flex flex-col">
+            <Navbar />
+            <Outlet />
+        </div>
+    );
 }
 
-export default ProtectedRoute;
+export default ProtectedRoute;
+
