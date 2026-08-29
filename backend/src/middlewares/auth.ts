@@ -6,7 +6,11 @@ import type { UserRole } from "../constants/ROLES.js";
 
 export const protectRoute = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { token } = req.cookies;
+        const token =
+            req.cookies?.token ||
+            (req.headers.authorization?.startsWith("Bearer ")
+                ? req.headers.authorization.split(" ")[1]
+                : null);
 
         if (!token) {
             return errorResponse(res, "Unauthorized", 401);
@@ -23,7 +27,10 @@ export const protectRoute = async (req: Request, res: Response, next: NextFuncti
         if (error instanceof jwt.TokenExpiredError) {
             return errorResponse(res, "Token expired", 401);
         }
-        console.log(error);
+        if (error instanceof jwt.JsonWebTokenError) {
+            return errorResponse(res, "Invalid token", 401);
+        }
+        console.error("Auth middleware error:", error);
         errorResponse(res, "Something went wrong", 500, error);
     }
 };

@@ -81,7 +81,8 @@ export const login = async (req: Request, res: Response) => {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
+            secure: config.NODE_ENV === "production",
+            sameSite: config.NODE_ENV === "production" ? "none" : "lax",
             maxAge: durationToMs(config.JWT_EXPIRES_IN),
         });
 
@@ -133,7 +134,8 @@ export const logout = async (req: Request, res: Response) => {
     try {
         res.cookie("token", "", {
             httpOnly: true,
-            secure: true,
+            secure: config.NODE_ENV === "production",
+            sameSite: config.NODE_ENV === "production" ? "none" : "lax",
             expires: new Date(0),
         });
         successResponse(res, {}, "Logout successful", 200);
@@ -141,3 +143,4 @@ export const logout = async (req: Request, res: Response) => {
         errorResponse(res, "Something went wrong", 500, error);
     }
 }
+
