@@ -6,7 +6,7 @@ import { ROLES } from "../constants/ROLES.js";
 const router: Router = Router();
 
 // Admin Routes
-router.post("/user", protectRoute, hasRole(ROLES.ADMIN), addUser);
+router.post("/add-user", protectRoute, hasRole(ROLES.ADMIN), addUser);
 
 router.post("/update-password", protectRoute, updatePassword);
 

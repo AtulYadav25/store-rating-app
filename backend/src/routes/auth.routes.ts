@@ -8,6 +8,6 @@ const router: Router = Router();
 router.post("/register", register);
 router.post("/login", login);
 router.post("/logout", logout);
-router.get("/me", getMe);
+router.get("/me", protectRoute, getMe);
 
 export default router;
