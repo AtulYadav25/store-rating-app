@@ -6,7 +6,7 @@ import { errorResponse, paginationResponse, successResponse } from "../utils/res
 export const getStores = async (req: Request, res: Response) => {
     try {
         // Get query parameters
-        const { page = 1, limit = 15, name, email, address } = req.query;
+        const { page = 1, limit = 15, search } = req.query;
 
         const pageNumber = parseInt(page as string, 10);
         const limitNumber = parseInt(limit as string, 10);
@@ -20,45 +20,26 @@ export const getStores = async (req: Request, res: Response) => {
             return errorResponse(res, "Invalid query parameters", 400);
         }
 
-        // Build search filters
-        const conditions: Prisma.StoreWhereInput[] = [];
+        const searchTerm = typeof search === "string" ? search.trim() : "";
 
-        // Apply All Filters
-        if (typeof name === "string" && name.trim()) {
-            conditions.push({
-                name: {
-                    contains: name.trim(),
-                    mode: "insensitive",
-                },
-            });
-        }
-
-        if (typeof email === "string" && email.trim()) {
-            conditions.push({
-                email: {
-                    contains: email.trim(),
-                    mode: "insensitive",
-                },
-            });
-        }
-
-        if (typeof address === "string" && address.trim()) {
-            const addressTerms = address
-                .trim()
-                .split(/[,\s]+/)
-                .filter(Boolean);
-
-            addressTerms.forEach((term) => {
-                conditions.push({
-                    address: {
-                        contains: term,
-                        mode: "insensitive",
-                    },
-                });
-            });
-        }
-
-        const where: Prisma.StoreWhereInput = conditions.length > 0 ? { AND: conditions } : {};
+        const where: Prisma.StoreWhereInput = searchTerm
+            ? {
+                  OR: [
+                      {
+                          name: {
+                              contains: searchTerm,
+                              mode: "insensitive",
+                          },
+                      },
+                      {
+                          address: {
+                              contains: searchTerm,
+                              mode: "insensitive",
+                          },
+                      },
+                  ],
+              }
+            : {};
 
         const stores = await prisma.store.findMany({
             where,
