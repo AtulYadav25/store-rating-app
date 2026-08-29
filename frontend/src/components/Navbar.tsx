@@ -79,8 +79,8 @@ export const Navbar: React.FC = () => {
           <Link
             to="/"
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname === "/"
-                ? "bg-slate-100 text-slate-900"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              ? "bg-slate-100 text-slate-900"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               }`}
           >
             <Store className="h-4 w-4" />
@@ -89,10 +89,10 @@ export const Navbar: React.FC = () => {
 
           {showDashboard && (
             <Link
-              to="/dashboard"
+              to={`/dashboard/${user?.role === ROLES.ADMIN ? "admin" : "owner"}`}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname.startsWith("/dashboard")
-                  ? "bg-slate-100 text-slate-900"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                ? "bg-slate-100 text-slate-900"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
             >
               <LayoutDashboard className="h-4 w-4" />

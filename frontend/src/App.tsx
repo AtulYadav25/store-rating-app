@@ -8,6 +8,8 @@ import { Toaster } from 'react-hot-toast';
 import Profile from './pages/Profile'
 import UpdatePassword from './pages/UpdatePassword'
 import StoreDetails from './pages/StoreDetails'
+import { ROLES } from './constants/ROLES'
+import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
   return (
@@ -22,6 +24,13 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/update-password" element={<UpdatePassword />} />
             <Route path="/store/:storeId" element={<StoreDetails />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
+            <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard/admin/add-user" element={<AdminDashboard />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={[ROLES.STORE_OWNER]} />}>
+            <Route path="/dashboard/owner" element={<AdminDashboard />} />
           </Route>
         </Routes>
       </BrowserRouter>
