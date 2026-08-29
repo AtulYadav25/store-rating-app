@@ -2,7 +2,8 @@ import { prisma } from "../lib/prisma.js";
 import { errorResponse, successResponse } from "../utils/responseHandler.js";
 import type { Request, Response } from "express";
 import bcrypt from 'bcrypt';
-import { signUpSchema, validPassword } from "../validators/auth.types.js";
+import { roleEnumSchema, signUpSchema, validPassword } from "../validators/auth.types.js";
+
 
 export const addUser = async (req: Request, res: Response) => {
     try {
@@ -84,3 +85,44 @@ export const updatePassword = async (req: Request, res: Response) => {
         errorResponse(res, "Error updating password", 500, error);
     }
 }
+
+export const updateUserRole = async (req: Request, res: Response) => {
+    try {
+        const { role, userId } = req.body;
+
+        if (!userId) {
+            return errorResponse(res, "User ID is required", 400);
+        }
+
+        const roleValidationResult = roleEnumSchema.safeParse(role);
+        if (!roleValidationResult.success) {
+            return errorResponse(res, "Invalid role.", 400, roleValidationResult.error);
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, role: true }
+        });
+
+        if (!user) {
+            return errorResponse(res, "User not found", 404);
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { role: roleValidationResult.data },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                address: true,
+                role: true,
+                updatedAt: true
+            }
+        });
+
+        successResponse(res, updatedUser, "User role updated successfully", 200);
+    } catch (error) {
+        errorResponse(res, "Failed to update user role", 500, error);
+    }
+};

@@ -33,3 +33,10 @@ export const publicUserSchema = z.object({
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type PublicUser = z.infer<typeof publicUserSchema>;
+
+export const updateRoleSchema = z.object({
+    userId: z.string().optional(),
+    role: roleEnumSchema,
+});
+
+export type UpdateRoleInput = z.infer<typeof updateRoleSchema>;
