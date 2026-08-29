@@ -3,25 +3,6 @@ import { prisma } from "../lib/prisma.js";
 import { errorResponse, paginationResponse, successResponse } from "../utils/responseHandler.js";
 import { ROLES } from "../constants/ROLES.js";
 
-const updateStoreRatingStats = async (storeId: string) => {
-    const aggregate = await prisma.rating.aggregate({
-        where: { storeId },
-        _avg: { rating: true },
-        _count: { rating: true },
-    });
-
-    const avgRating = aggregate._avg.rating ? parseFloat(aggregate._avg.rating.toFixed(2)) : 0;
-    const ratingCount = aggregate._count.rating ?? 0;
-
-    await prisma.store.update({
-        where: { id: storeId },
-        data: {
-            avgRating,
-            ratingCount,
-        },
-    });
-};
-
 export const getStoreRatings = async (req: Request, res: Response) => {
     try {
         const storeId = req.params.storeId as string;
@@ -76,7 +57,6 @@ export const getStoreRatings = async (req: Request, res: Response) => {
     }
 };
 
-
 export const giveRating = async (req: Request, res: Response) => {
     try {
         const storeId = req.params.storeId as string;
@@ -97,43 +77,80 @@ export const giveRating = async (req: Request, res: Response) => {
             return errorResponse(res, "Rating must be an integer between 1 and 5", 400);
         }
 
-        const storeExists = await prisma.store.findUnique({
+        // Fetch store current rating stats
+        const store = await prisma.store.findUnique({
             where: { id: storeId },
-            select: { id: true },
+            select: { id: true, avgRating: true, ratingCount: true },
         });
 
-        if (!storeExists) {
+        if (!store) {
             return errorResponse(res, "Store not found", 404);
         }
 
-        // Upsert rating: create if new, update if already exists
-        const userRating = await prisma.rating.upsert({
+        // Check if user already submitted a rating for this store
+        const existingRating = await prisma.rating.findUnique({
             where: {
                 userId_storeId: {
                     userId,
                     storeId,
                 },
             },
-            update: {
-                rating: numericRating,
-            },
-            create: {
-                userId,
-                storeId,
-                rating: numericRating,
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                    },
-                },
-            },
+            select: { rating: true },
         });
 
-        await updateStoreRatingStats(storeId);
+        let newRatingCount: number;
+        let newAvgRating: number;
+
+        if (existingRating) {
+            // Updating existing rating: count stays same, replace old rating with new
+            const oldRating = existingRating.rating;
+            newRatingCount = store.ratingCount || 1;
+            const currentTotalSum = store.avgRating * store.ratingCount;
+            const newTotalSum = currentTotalSum - oldRating + numericRating;
+            newAvgRating = parseFloat((newTotalSum / newRatingCount).toFixed(2));
+        } else {
+            // Adding a new rating: increment count and add new rating to sum
+            newRatingCount = store.ratingCount + 1;
+            const currentTotalSum = store.avgRating * store.ratingCount;
+            const newTotalSum = currentTotalSum + numericRating;
+            newAvgRating = parseFloat((newTotalSum / newRatingCount).toFixed(2));
+        }
+
+        // Execute rating upsert and store stats update atomically in a transaction
+        const [userRating] = await prisma.$transaction([
+            prisma.rating.upsert({
+                where: {
+                    userId_storeId: {
+                        userId,
+                        storeId,
+                    },
+                },
+                update: {
+                    rating: numericRating,
+                },
+                create: {
+                    userId,
+                    storeId,
+                    rating: numericRating,
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        },
+                    },
+                },
+            }),
+            prisma.store.update({
+                where: { id: storeId },
+                data: {
+                    avgRating: newAvgRating,
+                    ratingCount: newRatingCount,
+                },
+            }),
+        ]);
 
         return successResponse(res, userRating, "Rating saved successfully", 200);
 
@@ -157,6 +174,11 @@ export const deleteRating = async (req: Request, res: Response) => {
 
         const existingRating = await prisma.rating.findUnique({
             where: { id: ratingId },
+            include: {
+                store: {
+                    select: { id: true, avgRating: true, ratingCount: true },
+                },
+            },
         });
 
         if (!existingRating) {
@@ -167,12 +189,29 @@ export const deleteRating = async (req: Request, res: Response) => {
             return errorResponse(res, "Forbidden: You can only delete your own rating", 403);
         }
 
-        await prisma.rating.delete({
-            where: { id: ratingId },
-        });
+        const store = existingRating.store;
+        const newRatingCount = Math.max(0, (store?.ratingCount ?? 1) - 1);
+        let newAvgRating = 0;
 
+        if (newRatingCount > 0 && store) {
+            const currentTotalSum = store.avgRating * store.ratingCount;
+            const newTotalSum = Math.max(0, currentTotalSum - existingRating.rating);
+            newAvgRating = parseFloat((newTotalSum / newRatingCount).toFixed(2));
+        }
 
-        await updateStoreRatingStats(existingRating.storeId);
+        // Atomically delete rating and update store stats
+        await prisma.$transaction([
+            prisma.rating.delete({
+                where: { id: ratingId },
+            }),
+            prisma.store.update({
+                where: { id: existingRating.storeId },
+                data: {
+                    avgRating: newAvgRating,
+                    ratingCount: newRatingCount,
+                },
+            }),
+        ]);
 
         return successResponse(res, null, "Rating deleted successfully", 200);
 

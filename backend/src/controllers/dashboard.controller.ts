@@ -148,14 +148,13 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const getUsersWithRatings = async (req: Request, res: Response) => {
     try {
-        // View a list of users who have submitted ratings for their store(s).
         const ownerId = req.user?.id;
 
         if (!ownerId) {
             return errorResponse(res, "Unauthorized", 401);
         }
 
-        const { page = 1, limit = 20 } = req.query;
+        const { page = 1, limit = 10 } = req.query;
 
         const pageNumber = parseInt(page as string, 10);
         const limitNumber = parseInt(limit as string, 10);
@@ -163,6 +162,22 @@ export const getUsersWithRatings = async (req: Request, res: Response) => {
         if (Number.isNaN(pageNumber) || Number.isNaN(limitNumber) || pageNumber < 1 || limitNumber < 1) {
             return errorResponse(res, "Invalid pagination parameters", 400);
         }
+
+        const store = await prisma.store.findFirst({
+            where: { ownerId },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                address: true,
+                image: true,
+                avgRating: true,
+                ratingCount: true,
+                createdAt: true,
+            },
+        });
+
+        const total = store?.ratingCount ?? 0;
 
         const ratings = await prisma.rating.findMany({
             where: {
@@ -199,7 +214,24 @@ export const getUsersWithRatings = async (req: Request, res: Response) => {
             skip: (pageNumber - 1) * limitNumber,
         });
 
-        return paginationResponse(res, ratings, pageNumber, limitNumber);
+        const totalPages = Math.ceil(total / limitNumber);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                store,
+                ratings,
+            },
+            message: "Store ratings fetched successfully",
+            meta: {
+                page: pageNumber,
+                limit: limitNumber,
+                total,
+                totalPages,
+                hasNextPage: pageNumber < totalPages,
+                hasPrevPage: pageNumber > 1,
+            },
+        });
 
     } catch (error) {
         return errorResponse(res, "Failed to fetch store ratings", 500, error);
