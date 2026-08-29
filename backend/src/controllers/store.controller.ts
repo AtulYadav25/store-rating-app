@@ -71,6 +71,15 @@ export const getStore = async (req: Request, res: Response) => {
             where: {
                 id,
             },
+            include: {
+                owner: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
         });
 
         if (!store) {
@@ -161,5 +170,101 @@ export const addStore = async (req: Request, res: Response) => {
 
     } catch (error) {
         return errorResponse(res, "Failed to add store", 500, error);
+    }
+};
+
+// Route to edit store (ADMIN ONLY)
+export const editStore = async (req: Request, res: Response) => {
+    try {
+        const storeId = req.params.storeId as string;
+
+        if (!storeId) {
+            return errorResponse(res, "Store ID is required", 400);
+        }
+
+        const existingStore = await prisma.store.findUnique({
+            where: { id: storeId },
+        });
+
+        if (!existingStore) {
+            return errorResponse(res, "Store not found", 404);
+        }
+
+        const { name, email, address, image, ownerEmail } = req.body;
+
+        if (name !== undefined) {
+            if (name.trim().length < 20 || name.trim().length > 60) {
+                return errorResponse(res, "Store name must be between 20 and 60 characters", 400);
+            }
+        }
+
+        if (address !== undefined) {
+            if (address.trim().length > 400) {
+                return errorResponse(res, "Address must not exceed 400 characters", 400);
+            }
+        }
+
+        if (email !== undefined && email.trim().toLowerCase() !== existingStore.email) {
+            const emailTaken = await prisma.store.findUnique({
+                where: { email: email.trim().toLowerCase() },
+            });
+            if (emailTaken) {
+                return errorResponse(res, "Another store with this email already exists", 400);
+            }
+        }
+
+        let resolvedOwnerId: string | null | undefined = undefined;
+
+        if (ownerEmail !== undefined) {
+            if (ownerEmail === null || ownerEmail.trim() === "") {
+                resolvedOwnerId = null;
+            } else {
+                const targetEmail = ownerEmail.trim().toLowerCase();
+                const owner = await prisma.user.findUnique({
+                    where: { email: targetEmail },
+                });
+                if (!owner) {
+                    return errorResponse(res, "Specified store owner with this email does not exist", 404);
+                }
+
+                // Check if this owner is already assigned to a DIFFERENT store
+                const existingOwnerStore = await prisma.store.findFirst({
+                    where: {
+                        ownerId: owner.id,
+                        NOT: { id: storeId },
+                    },
+                });
+                if (existingOwnerStore) {
+                    return errorResponse(res, "This user is already assigned as an owner to another store", 400);
+                }
+
+                resolvedOwnerId = owner.id;
+            }
+        }
+
+        const updatedStore = await prisma.store.update({
+            where: { id: storeId },
+            data: {
+                ...(name !== undefined && { name: name.trim() }),
+                ...(email !== undefined && { email: email.trim().toLowerCase() }),
+                ...(address !== undefined && { address: address.trim() }),
+                ...(image !== undefined && { image: image ? image.trim() : null }),
+                ...(resolvedOwnerId !== undefined && { ownerId: resolvedOwnerId }),
+            },
+            include: {
+                owner: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+
+        return successResponse(res, updatedStore, "Store updated successfully", 200);
+
+    } catch (error) {
+        return errorResponse(res, "Failed to update store", 500, error);
     }
 };
