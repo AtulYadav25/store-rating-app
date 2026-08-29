@@ -3,8 +3,7 @@ import { protectRoute } from "../middlewares/auth.js";
 import {
     deleteRating,
     getStoreRatings,
-    giveRating,
-    updateRating,
+    giveRating
 } from "../controllers/rating.controller.js";
 
 const router: Router = Router();
@@ -12,8 +11,6 @@ const router: Router = Router();
 router.get('/:storeId', protectRoute, getStoreRatings);
 
 router.post('/:storeId', protectRoute, giveRating);
-
-router.put('/:ratingId', protectRoute, updateRating);
 
 router.delete('/:ratingId', protectRoute, deleteRating);
 

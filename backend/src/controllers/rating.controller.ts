@@ -106,25 +106,18 @@ export const giveRating = async (req: Request, res: Response) => {
             return errorResponse(res, "Store not found", 404);
         }
 
-        const existingRating = await prisma.rating.findUnique({
+        // Upsert rating: create if new, update if already exists
+        const userRating = await prisma.rating.upsert({
             where: {
                 userId_storeId: {
                     userId,
                     storeId,
                 },
             },
-        });
-
-        if (existingRating) {
-            return errorResponse(
-                res,
-                "You have already submitted a rating for this store. Please modify your existing rating.",
-                400
-            );
-        }
-
-        const newRating = await prisma.rating.create({
-            data: {
+            update: {
+                rating: numericRating,
+            },
+            create: {
                 userId,
                 storeId,
                 rating: numericRating,
@@ -142,67 +135,10 @@ export const giveRating = async (req: Request, res: Response) => {
 
         await updateStoreRatingStats(storeId);
 
-        return successResponse(res, newRating, "Rating submitted successfully", 201);
+        return successResponse(res, userRating, "Rating saved successfully", 200);
 
     } catch (error) {
         return errorResponse(res, "Failed to submit rating", 500, error);
-    }
-};
-
-export const updateRating = async (req: Request, res: Response) => {
-    try {
-        const ratingId = req.params.ratingId as string;
-        const { rating } = req.body;
-        const userId = req.user?.id;
-
-        if (!userId) {
-            return errorResponse(res, "Unauthorized", 401);
-        }
-
-        if (!ratingId) {
-            return errorResponse(res, "Rating ID is required", 400);
-        }
-
-        const numericRating = Number(rating);
-
-        if (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5) {
-            return errorResponse(res, "Rating must be an integer between 1 and 5", 400);
-        }
-
-        const existingRating = await prisma.rating.findUnique({
-            where: { id: ratingId },
-        });
-
-        if (!existingRating) {
-            return errorResponse(res, "Rating not found", 404);
-        }
-
-        if (existingRating.userId !== userId && req.user?.role !== "admin") {
-            return errorResponse(res, "Forbidden: You can only update your own rating", 403);
-        }
-
-        const updatedRating = await prisma.rating.update({
-            where: { id: ratingId },
-            data: {
-                rating: numericRating,
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                    },
-                },
-            },
-        });
-
-        await updateStoreRatingStats(existingRating.storeId);
-
-        return successResponse(res, updatedRating, "Rating updated successfully", 200);
-
-    } catch (error) {
-        return errorResponse(res, "Failed to update rating", 500, error);
     }
 };
 

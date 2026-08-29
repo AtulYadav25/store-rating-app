@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { StoreCard } from "../components/StoreCard";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -8,8 +9,10 @@ import { Search, ChevronLeft, ChevronRight, Store, X, AlertCircle, RefreshCw } f
 const STORES_PER_PAGE = 9;
 
 const Home: React.FC = () => {
+    const navigate = useNavigate();
     const [searchInput, setSearchInput] = useState("");
     const [activeSearch, setActiveSearch] = useState("");
+
 
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -167,7 +170,7 @@ const Home: React.FC = () => {
                             <StoreCard
                                 key={store.id}
                                 store={store}
-                                onClick={(s) => console.log("Clicked store:", s.name)}
+                                onClick={(s) => navigate(`/store/${s.id}`)}
                             />
                         ))}
                     </div>

@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import { Toaster } from 'react-hot-toast';
 import Profile from './pages/Profile'
 import UpdatePassword from './pages/UpdatePassword'
+import StoreDetails from './pages/StoreDetails'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/store/:storeId" element={<StoreDetails />} />
           </Route>
         </Routes>
       </BrowserRouter>
@@ -28,4 +30,5 @@ function App() {
 }
 
 export default App
+
 

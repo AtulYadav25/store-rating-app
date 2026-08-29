@@ -9,6 +9,7 @@ export interface Store {
   avgRating: number;
   ratingCount: number;
   ownerId?: string | null;
+  userRating?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -61,6 +61,7 @@ export const getStores = async (req: Request, res: Response) => {
 export const getStore = async (req: Request, res: Response) => {
     try {
         const id = req.params.id as string;
+        const userId = req.user?.id;
 
         if (!id) {
             return errorResponse(res, "Invalid store ID", 400);
@@ -70,21 +71,27 @@ export const getStore = async (req: Request, res: Response) => {
             where: {
                 id,
             },
-            include: {
-                ratings: {
-                    take: 10,
-                    orderBy: {
-                        createdAt: "desc",
-                    },
-                },
-            },
         });
 
         if (!store) {
             return errorResponse(res, "Store not found", 404);
         }
 
-        successResponse(res, store, 'Store fetched successfully', 200);
+        let userRating: number | null = null;
+        if (userId) {
+            const ratingRecord = await prisma.rating.findUnique({
+                where: {
+                    userId_storeId: {
+                        userId,
+                        storeId: id,
+                    },
+                },
+                select: { rating: true },
+            });
+            userRating = ratingRecord?.rating ?? null;
+        }
+
+        successResponse(res, { ...store, userRating }, 'Store fetched successfully', 200);
 
     } catch (error) {
         errorResponse(res, "Failed to fetch store", 500, error);
