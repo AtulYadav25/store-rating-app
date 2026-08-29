@@ -9,8 +9,9 @@ import Profile from './pages/Profile'
 import UpdatePassword from './pages/UpdatePassword'
 import StoreDetails from './pages/StoreDetails'
 import { ROLES } from './constants/ROLES'
-import AdminDashboard from './pages/AdminDashboard'
-import AllUsers from './pages/AllUsers'
+import AdminDashboard from './pages/adminPages/AdminDashboard'
+import AllUsers from './pages/adminPages/AllUsers'
+import AddUser from './pages/adminPages/AddUser'
 
 function App() {
   return (
@@ -29,7 +30,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/dashboard/admin/users" element={<AllUsers />} />
-            <Route path="/dashboard/admin/add-user" element={<AdminDashboard />} />
+            <Route path="/dashboard/admin/add-user" element={<AddUser />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={[ROLES.STORE_OWNER]} />}>
             <Route path="/dashboard/owner" element={<AdminDashboard />} />

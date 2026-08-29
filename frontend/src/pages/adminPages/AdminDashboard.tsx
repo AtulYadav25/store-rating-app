@@ -1,11 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAdminDashboardStats } from "../hooks/useDashboard";
+import { useAdminDashboardStats } from "../../hooks/useDashboard";
 import {
   Card,
   CardContent
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
 import {
   Users,
   Store,
@@ -61,7 +61,7 @@ const AdminDashboard: React.FC = () => {
       iconBg: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
       accentHover: "group-hover:border-emerald-300 group-hover:shadow-emerald-500/5",
       onClick: () => {
-        console.log("Action: Add User");
+        navigate("/dashboard/admin/add-user");
       },
     },
     {

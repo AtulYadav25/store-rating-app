@@ -4,16 +4,16 @@ import {
   useAdminUsers,
   useUpdateUserRole,
   useAdminDashboardStats,
-} from "../hooks/useDashboard";
+} from "../../hooks/useDashboard";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle
-} from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Avatar, AvatarFallback } from "../components/ui/avatar";
+} from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import {
   Users,
   Search,
@@ -28,7 +28,7 @@ import {
   Mail,
   MapPin
 } from "lucide-react";
-import { ROLES, type UserRole } from "../constants/ROLES";
+import { ROLES, type UserRole } from "../../constants/ROLES";
 import toast from "react-hot-toast";
 
 const USERS_PER_PAGE = 10;
