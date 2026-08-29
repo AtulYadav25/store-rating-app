@@ -1,5 +1,12 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getStores, getStore, type GetStoresParams } from "../api/store.api";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import {
+  getStores,
+  getStore,
+  addStore,
+  type GetStoresParams,
+  type AddStoreData,
+} from "../api/store.api";
+import { DASHBOARD_QUERY_KEY } from "./useDashboard";
 
 export const STORES_QUERY_KEY = ["stores"] as const;
 
@@ -20,5 +27,19 @@ export const useStore = (id: string) => {
     queryFn: () => getStore(id),
     enabled: Boolean(id),
     staleTime: 1000 * 60 * 2,
+  });
+};
+
+export const useAddStore = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: AddStoreData) => addStore(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STORES_QUERY_KEY });
+      queryClient.invalidateQueries({
+        queryKey: [...DASHBOARD_QUERY_KEY, "admin", "stats"],
+      });
+    },
   });
 };

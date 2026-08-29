@@ -20,6 +20,14 @@ export interface GetStoresParams {
   search?: string;
 }
 
+export interface AddStoreData {
+  name: string;
+  email: string;
+  address: string;
+  image?: string | null;
+  ownerEmail?: string | null;
+}
+
 export type StoresResponse = PaginatedAPIResponse<Store>;
 export type StoreDetailResponse = APIResponse<Store>;
 
@@ -38,5 +46,10 @@ export const getStores = async (params: GetStoresParams = {}): Promise<StoresRes
 
 export const getStore = async (id: string): Promise<StoreDetailResponse> => {
   const response = await api.get<StoreDetailResponse>(`/store/${id}`);
+  return response.data;
+};
+
+export const addStore = async (data: AddStoreData): Promise<APIResponse<Store>> => {
+  const response = await api.post<APIResponse<Store>>("/store", data);
   return response.data;
 };

@@ -50,7 +50,7 @@ const AdminDashboard: React.FC = () => {
       iconBg: "bg-amber-50 text-amber-600 border-amber-200/60",
       accentHover: "group-hover:border-amber-300 group-hover:shadow-amber-500/5",
       onClick: () => {
-        console.log("Action: Show All Stores");
+        navigate("/");
       },
     },
     {
@@ -72,7 +72,7 @@ const AdminDashboard: React.FC = () => {
       iconBg: "bg-purple-50 text-purple-600 border-purple-200/60",
       accentHover: "group-hover:border-purple-300 group-hover:shadow-purple-500/5",
       onClick: () => {
-        console.log("Action: Add Store");
+        navigate("/dashboard/admin/add-store");
       },
     },
   ];
