@@ -76,3 +76,76 @@ export const updateUserRole = async (
   );
   return response.data;
 };
+
+
+
+
+// Store Owner Dashboard Types
+
+
+
+export interface OwnerRatingUser {
+  id: string;
+  name: string;
+  email: string;
+  address: string;
+}
+
+export interface OwnerStoreInfo {
+  id: string;
+  name: string;
+  email: string;
+  address: string;
+  image?: string | null;
+  avgRating: number;
+  ratingCount: number;
+  createdAt: string;
+}
+
+export interface OwnerRatingItem {
+  id: string;
+  rating: number;
+  createdAt: string;
+  user: OwnerRatingUser;
+  store: {
+    id: string;
+    name: string;
+    address: string;
+    avgRating: number;
+    ratingCount: number;
+  };
+}
+
+export interface OwnerStoreRatingsData {
+  store: OwnerStoreInfo | null;
+  ratings: OwnerRatingItem[];
+}
+
+export interface OwnerStoreRatingsResponse {
+  success: boolean;
+  message: string;
+  data: OwnerStoreRatingsData;
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
+}
+
+export const getOwnerStoreRatings = async (params: {
+  page?: number;
+  limit?: number;
+} = {}): Promise<OwnerStoreRatingsResponse> => {
+  const { page = 1, limit = 10 } = params;
+  const searchParams = new URLSearchParams();
+  searchParams.set("page", String(page));
+  searchParams.set("limit", String(limit));
+
+  const response = await api.get<OwnerStoreRatingsResponse>(
+    `/dashboard/owner/ratings?${searchParams.toString()}`
+  );
+  return response.data;
+};

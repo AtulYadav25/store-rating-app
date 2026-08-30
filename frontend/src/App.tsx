@@ -14,6 +14,7 @@ import AllUsers from './pages/adminPages/AllUsers'
 import AddUser from './pages/adminPages/AddUser'
 import AddStore from './pages/adminPages/AddStore'
 import EditStore from './pages/adminPages/EditStore'
+import OwnerDashboard from './pages/ownerPages/OwnerDashboard'
 
 function App() {
   return (
@@ -37,7 +38,7 @@ function App() {
             <Route path="/dashboard/admin/edit-store/:storeId" element={<EditStore />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={[ROLES.STORE_OWNER]} />}>
-            <Route path="/dashboard/owner" element={<AdminDashboard />} />
+            <Route path="/dashboard/owner" element={<OwnerDashboard />} />
           </Route>
         </Routes>
       </BrowserRouter>

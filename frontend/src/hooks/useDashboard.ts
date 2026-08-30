@@ -8,6 +8,7 @@ import {
   getAdminDashboardStats,
   getAdminUsers,
   updateUserRole,
+  getOwnerStoreRatings,
   type GetAdminUsersParams,
   type UpdateUserRoleData,
 } from "../api/dashboard.api";
@@ -44,5 +45,19 @@ export const useUpdateUserRole = () => {
         queryKey: [...DASHBOARD_QUERY_KEY, "admin", "stats"],
       });
     },
+  });
+};
+
+export const useOwnerStoreRatings = (params: {
+  page?: number;
+  limit?: number;
+} = {}) => {
+  const { page = 1, limit = 10 } = params;
+
+  return useQuery({
+    queryKey: [...DASHBOARD_QUERY_KEY, "owner", "ratings", { page, limit }],
+    queryFn: () => getOwnerStoreRatings({ page, limit }),
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 30,
   });
 };
