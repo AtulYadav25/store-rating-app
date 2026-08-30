@@ -84,65 +84,9 @@ export const getUsers = async (req: Request, res: Response) => {
     }
 };
 
-export const getUser = async (req: Request, res: Response) => {
-    try {
-        const userId = req.params.userId as string;
 
-        if (!userId) {
-            return errorResponse(res, "User ID is required", 400);
-        }
 
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                address: true,
-                role: true,
-                createdAt: true,
-                updatedAt: true,
-                ratings: {
-                    select: {
-                        id: true,
-                        rating: true,
-                        createdAt: true,
-                        store: {
-                            select: {
-                                id: true,
-                                name: true,
-                                address: true,
-                                avgRating: true,
-                            },
-                        },
-                    },
-                    orderBy: {
-                        createdAt: "desc",
-                    },
-                },
-                stores: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        address: true,
-                        avgRating: true,
-                        ratingCount: true,
-                    },
-                },
-            },
-        });
 
-        if (!user) {
-            return errorResponse(res, "User not found", 404);
-        }
-
-        return successResponse(res, user, "User details fetched successfully", 200);
-
-    } catch (error) {
-        return errorResponse(res, "Failed to fetch user details", 500, error);
-    }
-};
 
 
 

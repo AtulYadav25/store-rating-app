@@ -1,12 +1,11 @@
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { errorResponse, paginationResponse, successResponse } from "../utils/responseHandler.js";
-import { ROLES } from "../constants/ROLES.js";
 
 export const getStoreRatings = async (req: Request, res: Response) => {
     try {
         const storeId = req.params.storeId as string;
-        const { page = 1, limit = 10, userId } = req.query;
+        const { page = 1, limit = 10 } = req.query;
 
         if (!storeId) {
             return errorResponse(res, "Store ID is required", 400);
@@ -28,14 +27,8 @@ export const getStoreRatings = async (req: Request, res: Response) => {
             return errorResponse(res, "Store not found", 404);
         }
 
-        const where: any = { storeId };
-
-        if (typeof userId === "string" && userId.trim()) {
-            where.userId = userId.trim();
-        }
-
         const ratings = await prisma.rating.findMany({
-            where,
+            where: { storeId },
             take: limitNumber,
             skip: (pageNumber - 1) * limitNumber,
             orderBy: { createdAt: "desc" },
