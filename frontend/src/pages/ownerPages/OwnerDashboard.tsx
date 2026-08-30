@@ -20,12 +20,18 @@ import {
     AlertCircle,
     Clock,
     Sparkles,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
 } from "lucide-react";
 
 const RATINGS_PER_PAGE = 10;
 
 const OwnerDashboard: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortBy, setSortBy] = useState<"rating" | "createdAt">("createdAt");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
     const { data: currentUser } = useCurrentUser();
 
     const {
@@ -37,6 +43,8 @@ const OwnerDashboard: React.FC = () => {
     } = useOwnerStoreRatings({
         page: currentPage,
         limit: RATINGS_PER_PAGE,
+        sortBy,
+        sortOrder,
     });
 
     const store = dashboardData?.data?.store;
@@ -45,6 +53,29 @@ const OwnerDashboard: React.FC = () => {
 
     const hasPrevPage = meta ? meta.hasPrevPage : currentPage > 1;
     const hasNextPage = meta ? meta.hasNextPage : false;
+
+    const handleSort = (field: "rating" | "createdAt") => {
+        if (sortBy === field) {
+            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortBy(field);
+            setSortOrder("desc");
+        }
+        setCurrentPage(1);
+    };
+
+    const renderSortIcon = (field: "rating" | "createdAt") => {
+        if (sortBy !== field) {
+            return (
+                <ArrowUpDown className="h-3 w-3 text-slate-300 group-hover:text-slate-500 transition-colors" />
+            );
+        }
+        return sortOrder === "asc" ? (
+            <ArrowUp className="h-3 w-3 text-primary font-bold" />
+        ) : (
+            <ArrowDown className="h-3 w-3 text-primary font-bold" />
+        );
+    };
 
     const getInitials = (name?: string) => {
         if (!name) return "U";
@@ -142,8 +173,8 @@ const OwnerDashboard: React.FC = () => {
                                     <Star
                                         key={star}
                                         className={`h-4 w-4 ${star <= Math.round(store.avgRating)
-                                                ? "fill-amber-400 text-amber-400"
-                                                : "fill-slate-100 text-slate-200"
+                                            ? "fill-amber-400 text-amber-400"
+                                            : "fill-slate-100 text-slate-200"
                                             }`}
                                     />
                                 ))}
@@ -239,8 +270,26 @@ const OwnerDashboard: React.FC = () => {
                                     <th className="py-3 px-4 sm:px-6">Customer</th>
                                     <th className="py-3 px-4">Email</th>
                                     <th className="py-3 px-4">Address</th>
-                                    <th className="py-3 px-4">Rating Given</th>
-                                    <th className="py-3 px-4 sm:px-6 text-right">Submitted Date</th>
+                                    <th
+                                        className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                                        onClick={() => handleSort("rating")}
+                                        title="Click to sort by Rating"
+                                    >
+                                        <div className="flex items-center gap-1.5 group">
+                                            <span>Rating Given</span>
+                                            {renderSortIcon("rating")}
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="py-3 px-4 sm:px-6 text-right cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                                        onClick={() => handleSort("createdAt")}
+                                        title="Click to sort by Date"
+                                    >
+                                        <div className="flex items-center justify-end gap-1.5 group">
+                                            <span>Submitted Date</span>
+                                            {renderSortIcon("createdAt")}
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -349,8 +398,8 @@ const OwnerDashboard: React.FC = () => {
                                                             <Star
                                                                 key={s}
                                                                 className={`h-3 w-3 ${s <= item.rating
-                                                                        ? "fill-amber-400 text-amber-400"
-                                                                        : "fill-slate-100 text-slate-200"
+                                                                    ? "fill-amber-400 text-amber-400"
+                                                                    : "fill-slate-100 text-slate-200"
                                                                     }`}
                                                             />
                                                         ))}

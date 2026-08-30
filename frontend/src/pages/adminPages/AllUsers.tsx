@@ -28,6 +28,9 @@ import {
   Mail,
   MapPin,
   Star,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { ROLES, type UserRole } from "../../constants/ROLES";
 import toast from "react-hot-toast";
@@ -36,6 +39,12 @@ const USERS_PER_PAGE = 10;
 
 const AllUsers: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState<
+    "name" | "email" | "address" | "role" | "createdAt"
+  >("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Filter input states
   const [nameInput, setNameInput] = useState("");
@@ -70,6 +79,8 @@ const AllUsers: React.FC = () => {
   } = useAdminUsers({
     page: currentPage,
     limit: USERS_PER_PAGE,
+    sortBy,
+    sortOrder,
     ...(appliedFilters.role ? { role: appliedFilters.role as UserRole } : {}),
     ...(appliedFilters.name ? { name: appliedFilters.name } : {}),
     ...(appliedFilters.email ? { email: appliedFilters.email } : {}),
@@ -115,10 +126,37 @@ const AllUsers: React.FC = () => {
 
   // Quick Role Toggle / Filter selection
   const handleRoleToggle = (role: UserRole | "") => {
-    const newRole = selectedRole === role ? "" : role;
-    setSelectedRole(newRole);
-    setAppliedFilters((prev) => ({ ...prev, role: newRole }));
+    setSelectedRole(role);
+    setAppliedFilters((prev) => ({ ...prev, role }));
     setCurrentPage(1);
+  };
+
+  // Sorting handlers
+  const handleSort = (
+    field: "name" | "email" | "address" | "role" | "createdAt"
+  ) => {
+    if (sortBy === field) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortOrder(field === "createdAt" ? "desc" : "asc");
+    }
+    setCurrentPage(1);
+  };
+
+  const renderSortIcon = (
+    field: "name" | "email" | "address" | "role" | "createdAt"
+  ) => {
+    if (sortBy !== field) {
+      return (
+        <ArrowUpDown className="h-3 w-3 text-slate-300 group-hover:text-slate-500 transition-colors" />
+      );
+    }
+    return sortOrder === "asc" ? (
+      <ArrowUp className="h-3 w-3 text-primary font-bold" />
+    ) : (
+      <ArrowDown className="h-3 w-3 text-primary font-bold" />
+    );
   };
 
   // Update user role
@@ -234,119 +272,152 @@ const AllUsers: React.FC = () => {
               <CardTitle className="text-sm font-semibold text-slate-900">
                 Filter & Search Users
               </CardTitle>
-              {activeFilterCount > 0 && (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
-                  {activeFilterCount} active
-                </span>
-              )}
             </div>
-
-            {/* Role Filter Checkboxes / Pills */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-slate-500 mr-1">
-                Role:
+            {activeFilterCount > 0 && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary self-start sm:self-auto">
+                {activeFilterCount} active
               </span>
-              <button
-                type="button"
-                onClick={() => handleRoleToggle("")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${selectedRole === ""
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleToggle(ROLES.USER)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${selectedRole === ROLES.USER
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-              >
-                <User className="h-3 w-3" />
-                <span>Normal Users</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleToggle(ROLES.STORE_OWNER)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${selectedRole === ROLES.STORE_OWNER
-                  ? "bg-amber-600 text-white"
-                  : "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200/60"
-                  }`}
-              >
-                <Store className="h-3 w-3" />
-                <span>Store Owners</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleRoleToggle(ROLES.ADMIN)}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${selectedRole === ROLES.ADMIN
-                  ? "bg-purple-600 text-white"
-                  : "bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/60"
-                  }`}
-              >
-                <ShieldCheck className="h-3 w-3" />
-                <span>Admins</span>
-              </button>
-            </div>
+            )}
           </div>
         </CardHeader>
 
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-4 sm:p-6 space-y-4">
           <form onSubmit={handleApplyFilters} className="space-y-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {/* Search by Name */}
-              <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-                <Input
-                  placeholder="Filter by Name..."
-                  value={nameInput}
-                  onChange={(e) => setNameInput(e.target.value)}
-                  className="pl-9 h-9 text-xs bg-slate-50/50 border-slate-200 focus:bg-white"
-                />
+            {/* Search Input Fields Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Name Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Search by Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                  <Input
+                    type="text"
+                    placeholder="e.g. John Doe"
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    className="pl-9 h-9 bg-slate-50/50 border-slate-200 focus:bg-white text-xs"
+                  />
+                </div>
               </div>
 
-              {/* Search by Email */}
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-                <Input
-                  placeholder="Filter by Email..."
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  className="pl-9 h-9 text-xs bg-slate-50/50 border-slate-200 focus:bg-white"
-                />
+              {/* Email Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Search by Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                  <Input
+                    type="text"
+                    placeholder="e.g. user@domain.com"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    className="pl-9 h-9 bg-slate-50/50 border-slate-200 focus:bg-white text-xs"
+                  />
+                </div>
               </div>
 
-              {/* Search by Address */}
-              <div className="relative">
-                <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-                <Input
-                  placeholder="Filter by Address..."
-                  value={addressInput}
-                  onChange={(e) => setAddressInput(e.target.value)}
-                  className="pl-9 h-9 text-xs bg-slate-50/50 border-slate-200 focus:bg-white"
-                />
+              {/* Address Filter */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  Search by Address
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                  <Input
+                    type="text"
+                    placeholder="e.g. New York, NY"
+                    value={addressInput}
+                    onChange={(e) => setAddressInput(e.target.value)}
+                    className="pl-9 h-9 bg-slate-50/50 border-slate-200 focus:bg-white text-xs"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-1">
-              {activeFilterCount > 0 && (
-                <Button
+            {/* Role Filter Checkboxes / Quick Filters */}
+            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-semibold text-slate-500 mr-1">
+                  Filter Role:
+                </span>
+
+                {/* All Roles */}
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleResetFilters}
-                  className="text-xs text-slate-600 hover:text-slate-900 gap-1.5 h-8"
+                  onClick={() => handleRoleToggle("")}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                    selectedRole === ""
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
                 >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  <span>Reset Filters</span>
+                  All ({totalUsersCount ?? "—"})
+                </button>
+
+                {/* Normal User */}
+                <button
+                  type="button"
+                  onClick={() => handleRoleToggle(ROLES.USER)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                    selectedRole === ROLES.USER
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                  }`}
+                >
+                  <User className="h-3 w-3" />
+                  <span>Normal Users</span>
+                </button>
+
+                {/* Store Owner */}
+                <button
+                  type="button"
+                  onClick={() => handleRoleToggle(ROLES.STORE_OWNER)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                    selectedRole === ROLES.STORE_OWNER
+                      ? "bg-amber-600 text-white shadow-xs"
+                      : "bg-amber-50 text-amber-700 hover:bg-amber-100"
+                  }`}
+                >
+                  <Store className="h-3 w-3" />
+                  <span>Store Owners</span>
+                </button>
+
+                {/* Admin */}
+                <button
+                  type="button"
+                  onClick={() => handleRoleToggle(ROLES.ADMIN)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                    selectedRole === ROLES.ADMIN
+                      ? "bg-purple-600 text-white shadow-xs"
+                      : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                  }`}
+                >
+                  <ShieldCheck className="h-3 w-3" />
+                  <span>Admins</span>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                {activeFilterCount > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleResetFilters}
+                    className="text-xs text-slate-600 hover:text-slate-900 gap-1.5 h-8"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Reset Filters</span>
+                  </Button>
+                )}
+                <Button type="submit" size="sm" className="text-xs h-8 gap-1.5">
+                  <Search className="h-3.5 w-3.5" />
+                  <span>Search</span>
                 </Button>
-              )}
-              <Button type="submit" size="sm" className="text-xs h-8 gap-1.5">
-                <Search className="h-3.5 w-3.5" />
-                <span>Search</span>
-              </Button>
+              </div>
             </div>
           </form>
         </CardContent>
@@ -358,12 +429,57 @@ const AllUsers: React.FC = () => {
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-4 sm:px-6">User</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Address</th>
-                <th className="py-3 px-4">Role</th>
+                <th
+                  className="py-3 px-4 sm:px-6 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                  onClick={() => handleSort("name")}
+                  title="Click to sort by Name"
+                >
+                  <div className="flex items-center gap-1.5 group">
+                    <span>User</span>
+                    {renderSortIcon("name")}
+                  </div>
+                </th>
+                <th
+                  className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                  onClick={() => handleSort("email")}
+                  title="Click to sort by Email"
+                >
+                  <div className="flex items-center gap-1.5 group">
+                    <span>Email</span>
+                    {renderSortIcon("email")}
+                  </div>
+                </th>
+                <th
+                  className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                  onClick={() => handleSort("address")}
+                  title="Click to sort by Address"
+                >
+                  <div className="flex items-center gap-1.5 group">
+                    <span>Address</span>
+                    {renderSortIcon("address")}
+                  </div>
+                </th>
+                <th
+                  className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                  onClick={() => handleSort("role")}
+                  title="Click to sort by Role"
+                >
+                  <div className="flex items-center gap-1.5 group">
+                    <span>Role</span>
+                    {renderSortIcon("role")}
+                  </div>
+                </th>
                 <th className="py-3 px-4">Store Rating</th>
-                <th className="py-3 px-4">Joined Date</th>
+                <th
+                  className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                  onClick={() => handleSort("createdAt")}
+                  title="Click to sort by Joined Date"
+                >
+                  <div className="flex items-center gap-1.5 group">
+                    <span>Joined Date</span>
+                    {renderSortIcon("createdAt")}
+                  </div>
+                </th>
                 <th className="py-3 px-4 sm:px-6 text-right">Actions</th>
               </tr>
             </thead>

@@ -23,6 +23,9 @@ import {
     ExternalLink,
     User,
     AlertTriangle,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -33,6 +36,12 @@ const StoreList: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchInput, setSearchInput] = useState("");
     const [appliedSearch, setAppliedSearch] = useState("");
+
+    // Sorting state
+    const [sortBy, setSortBy] = useState<
+        "name" | "email" | "address" | "avgRating" | "createdAt"
+    >("createdAt");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
     // Store to delete state for modal
     const [storeToDelete, setStoreToDelete] = useState<{
@@ -54,6 +63,8 @@ const StoreList: React.FC = () => {
         page: currentPage,
         limit: STORES_PER_PAGE,
         search: appliedSearch,
+        sortBy,
+        sortOrder,
     });
 
     const { mutate: deleteStoreMutation, isPending: isDeleting } =
@@ -75,6 +86,33 @@ const StoreList: React.FC = () => {
         setSearchInput("");
         setAppliedSearch("");
         setCurrentPage(1);
+    };
+
+    const handleSort = (
+        field: "name" | "email" | "address" | "avgRating" | "createdAt"
+    ) => {
+        if (sortBy === field) {
+            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortBy(field);
+            setSortOrder(field === "createdAt" || field === "avgRating" ? "desc" : "asc");
+        }
+        setCurrentPage(1);
+    };
+
+    const renderSortIcon = (
+        field: "name" | "email" | "address" | "avgRating" | "createdAt"
+    ) => {
+        if (sortBy !== field) {
+            return (
+                <ArrowUpDown className="h-3 w-3 text-slate-300 group-hover:text-slate-500 transition-colors" />
+            );
+        }
+        return sortOrder === "asc" ? (
+            <ArrowUp className="h-3 w-3 text-primary font-bold" />
+        ) : (
+            <ArrowDown className="h-3 w-3 text-primary font-bold" />
+        );
     };
 
     const handleDeleteConfirm = () => {
@@ -192,10 +230,46 @@ const StoreList: React.FC = () => {
                     <table className="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                                <th className="py-3 px-4 sm:px-6">Store</th>
-                                <th className="py-3 px-4">Email</th>
-                                <th className="py-3 px-4">Address</th>
-                                <th className="py-3 px-4">Rating</th>
+                                <th
+                                    className="py-3 px-4 sm:px-6 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                                    onClick={() => handleSort("name")}
+                                    title="Click to sort by Store Name"
+                                >
+                                    <div className="flex items-center gap-1.5 group">
+                                        <span>Store</span>
+                                        {renderSortIcon("name")}
+                                    </div>
+                                </th>
+                                <th
+                                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                                    onClick={() => handleSort("email")}
+                                    title="Click to sort by Email"
+                                >
+                                    <div className="flex items-center gap-1.5 group">
+                                        <span>Email</span>
+                                        {renderSortIcon("email")}
+                                    </div>
+                                </th>
+                                <th
+                                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                                    onClick={() => handleSort("address")}
+                                    title="Click to sort by Address"
+                                >
+                                    <div className="flex items-center gap-1.5 group">
+                                        <span>Address</span>
+                                        {renderSortIcon("address")}
+                                    </div>
+                                </th>
+                                <th
+                                    className="py-3 px-4 cursor-pointer select-none hover:bg-slate-100/80 transition-colors"
+                                    onClick={() => handleSort("avgRating")}
+                                    title="Click to sort by Rating"
+                                >
+                                    <div className="flex items-center gap-1.5 group">
+                                        <span>Rating</span>
+                                        {renderSortIcon("avgRating")}
+                                    </div>
+                                </th>
                                 <th className="py-3 px-4">Assigned Owner</th>
                                 <th className="py-3 px-4 sm:px-6 text-right">Actions</th>
                             </tr>

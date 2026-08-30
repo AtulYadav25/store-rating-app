@@ -23,6 +23,8 @@ export interface GetStoresParams {
   page?: number;
   limit?: number;
   search?: string;
+  sortBy?: "name" | "email" | "address" | "avgRating" | "ratingCount" | "createdAt";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface AddStoreData {
@@ -45,12 +47,18 @@ export type StoresResponse = PaginatedAPIResponse<Store>;
 export type StoreDetailResponse = APIResponse<Store>;
 
 export const getStores = async (params: GetStoresParams = {}): Promise<StoresResponse> => {
-  const { page = 1, limit = 9, search = "" } = params;
+  const { page = 1, limit = 9, search = "", sortBy, sortOrder } = params;
   const searchParams = new URLSearchParams();
   searchParams.set("page", String(page));
   searchParams.set("limit", String(limit));
   if (search.trim()) {
     searchParams.set("search", search.trim());
+  }
+  if (sortBy) {
+    searchParams.set("sortBy", sortBy);
+  }
+  if (sortOrder) {
+    searchParams.set("sortOrder", sortOrder);
   }
 
   const response = await api.get<StoresResponse>(`/store?${searchParams.toString()}`);

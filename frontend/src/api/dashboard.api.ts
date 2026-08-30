@@ -31,6 +31,8 @@ export interface GetAdminUsersParams {
   name?: string;
   email?: string;
   address?: string;
+  sortBy?: "name" | "email" | "address" | "role" | "createdAt";
+  sortOrder?: "asc" | "desc";
 }
 
 export type AdminUsersResponse = PaginatedAPIResponse<DashboardUser>;
@@ -47,7 +49,7 @@ export const getAdminDashboardStats = async (): Promise<
 export const getAdminUsers = async (
   params: GetAdminUsersParams = {}
 ): Promise<AdminUsersResponse> => {
-  const { page = 1, limit = 10, role, name, email, address } = params;
+  const { page = 1, limit = 10, role, name, email, address, sortBy, sortOrder } = params;
   const searchParams = new URLSearchParams();
   searchParams.set("page", String(page));
   searchParams.set("limit", String(limit));
@@ -55,6 +57,8 @@ export const getAdminUsers = async (
   if (name?.trim()) searchParams.set("name", name.trim());
   if (email?.trim()) searchParams.set("email", email.trim());
   if (address?.trim()) searchParams.set("address", address.trim());
+  if (sortBy) searchParams.set("sortBy", sortBy);
+  if (sortOrder) searchParams.set("sortOrder", sortOrder);
 
   const response = await api.get<AdminUsersResponse>(
     `/dashboard/admin/users?${searchParams.toString()}`
@@ -77,13 +81,7 @@ export const updateUserRole = async (
   return response.data;
 };
 
-
-
-
 // Store Owner Dashboard Types
-
-
-
 export interface OwnerRatingUser {
   id: string;
   name: string;
@@ -135,14 +133,22 @@ export interface OwnerStoreRatingsResponse {
   };
 }
 
-export const getOwnerStoreRatings = async (params: {
+export interface GetOwnerStoreRatingsParams {
   page?: number;
   limit?: number;
-} = {}): Promise<OwnerStoreRatingsResponse> => {
-  const { page = 1, limit = 10 } = params;
+  sortBy?: "rating" | "createdAt";
+  sortOrder?: "asc" | "desc";
+}
+
+export const getOwnerStoreRatings = async (
+  params: GetOwnerStoreRatingsParams = {}
+): Promise<OwnerStoreRatingsResponse> => {
+  const { page = 1, limit = 10, sortBy, sortOrder } = params;
   const searchParams = new URLSearchParams();
   searchParams.set("page", String(page));
   searchParams.set("limit", String(limit));
+  if (sortBy) searchParams.set("sortBy", sortBy);
+  if (sortOrder) searchParams.set("sortOrder", sortOrder);
 
   const response = await api.get<OwnerStoreRatingsResponse>(
     `/dashboard/owner/ratings?${searchParams.toString()}`

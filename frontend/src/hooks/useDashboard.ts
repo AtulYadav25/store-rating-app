@@ -11,6 +11,7 @@ import {
   getOwnerStoreRatings,
   type GetAdminUsersParams,
   type UpdateUserRoleData,
+  type GetOwnerStoreRatingsParams,
 } from "../api/dashboard.api";
 
 export const DASHBOARD_QUERY_KEY = ["dashboard"] as const;
@@ -48,15 +49,12 @@ export const useUpdateUserRole = () => {
   });
 };
 
-export const useOwnerStoreRatings = (params: {
-  page?: number;
-  limit?: number;
-} = {}) => {
-  const { page = 1, limit = 10 } = params;
-
+export const useOwnerStoreRatings = (
+  params: GetOwnerStoreRatingsParams = {}
+) => {
   return useQuery({
-    queryKey: [...DASHBOARD_QUERY_KEY, "owner", "ratings", { page, limit }],
-    queryFn: () => getOwnerStoreRatings({ page, limit }),
+    queryKey: [...DASHBOARD_QUERY_KEY, "owner", "ratings", params],
+    queryFn: () => getOwnerStoreRatings(params),
     placeholderData: keepPreviousData,
     staleTime: 1000 * 30,
   });
