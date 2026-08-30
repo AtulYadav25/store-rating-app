@@ -17,6 +17,7 @@ import {
   User,
   KeyRound,
   LogOut,
+  ShieldCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -51,54 +52,60 @@ export const Navbar: React.FC = () => {
   const showDashboard =
     user?.role === ROLES.ADMIN || user?.role === ROLES.STORE_OWNER;
 
+  const dashboardPath = `/dashboard/${
+    user?.role === ROLES.ADMIN ? "admin" : "owner"
+  }`;
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8 gap-2 sm:gap-4">
         {/* Left: Brand Logo & Name */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center shrink-0">
           <Link
             to="/"
-            className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
+            className="flex items-center gap-2 sm:gap-2.5 transition-opacity hover:opacity-90"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs">
-              <Store className="h-5 w-5" />
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs shrink-0">
+              <Store className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-slate-900 leading-none">
+              <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 leading-none">
                 StoreRating
               </span>
-              <span className="text-[10px] font-medium text-slate-500">
+              <span className="hidden sm:inline-block text-[10px] font-medium text-slate-500 mt-0.5">
                 Community Reviews
               </span>
             </div>
           </Link>
         </div>
 
-        {/* Center: Navigation Links */}
-        <nav className="flex items-center gap-1 sm:gap-2">
+        {/* Center: Navigation Links (Desktop/Tablet only) */}
+        <nav className="hidden sm:flex items-center gap-1 sm:gap-2 shrink-0">
           <Link
             to="/"
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname === "/"
-              ? "bg-slate-100 text-slate-900"
-              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              location.pathname === "/"
+                ? "bg-slate-100 text-slate-900"
+                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            }`}
           >
-            <Store className="h-4 w-4" />
+            <Store className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
             <span>Stores</span>
           </Link>
 
           {showDashboard && (
             <Link
-              to={`/dashboard/${user?.role === ROLES.ADMIN ? "admin" : "owner"}`}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname.startsWith("/dashboard")
-                ? "bg-slate-100 text-slate-900"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                }`}
+              to={dashboardPath}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                location.pathname.startsWith("/dashboard")
+                  ? "bg-slate-100 text-slate-900"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              }`}
             >
-              <LayoutDashboard className="h-4 w-4" />
+              <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
               <span>Dashboard</span>
               {user?.role === ROLES.ADMIN && (
-                <span className="hidden sm:inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                <span className="hidden md:inline-block rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary leading-none">
                   Admin
                 </span>
               )}
@@ -107,23 +114,23 @@ export const Navbar: React.FC = () => {
         </nav>
 
         {/* Right: User Avatar / Profile Dropdown */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="group flex items-center gap-2.5 rounded-full p-1 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="group flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 aria-label="User menu"
               >
-                <Avatar className="h-9 w-9 border border-slate-200 transition-transform group-hover:scale-105">
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-slate-200 transition-transform group-hover:scale-105">
                   <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                     {getInitials(user?.name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="hidden text-left sm:block">
-                  <p className="text-xs font-semibold text-slate-900 leading-tight">
+                <div className="hidden lg:block text-left max-w-[120px]">
+                  <p className="text-xs font-semibold text-slate-900 leading-tight truncate">
                     {user?.name || "User"}
                   </p>
-                  <p className="text-[10px] text-slate-500 capitalize leading-tight">
+                  <p className="text-[10px] text-slate-500 capitalize leading-tight truncate">
                     {user?.role?.replace("_", " ") || "Normal User"}
                   </p>
                 </div>
@@ -136,15 +143,51 @@ export const Navbar: React.FC = () => {
             >
               <DropdownMenuLabel className="px-2 py-1.5">
                 <div className="flex flex-col space-y-0.5">
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-slate-900 truncate">
                     {user?.name || "My Account"}
                   </p>
-                  <p className="text-xs text-slate-500 truncate">
+                  <p className="text-xs text-slate-500 truncate font-mono">
                     {user?.email || "user@example.com"}
                   </p>
+                  {user?.role && (
+                    <div className="pt-1">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 uppercase tracking-wider">
+                        {user.role === ROLES.ADMIN ? (
+                          <ShieldCheck className="h-3 w-3 text-purple-600" />
+                        ) : user.role === ROLES.STORE_OWNER ? (
+                          <Store className="h-3 w-3 text-amber-600" />
+                        ) : (
+                          <User className="h-3 w-3 text-primary" />
+                        )}
+                        <span>{user.role.replace("_", " ")}</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="my-1 bg-slate-100" />
+
+              {/* Mobile Quick Navigation */}
+              <div className="sm:hidden">
+                <DropdownMenuItem
+                  className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-slate-100 cursor-pointer focus:bg-slate-100"
+                  onClick={() => navigate("/")}
+                >
+                  <Store className="h-4 w-4 text-slate-500" />
+                  <span>All Stores</span>
+                </DropdownMenuItem>
+
+                {showDashboard && (
+                  <DropdownMenuItem
+                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-slate-100 cursor-pointer focus:bg-slate-100"
+                    onClick={() => navigate(dashboardPath)}
+                  >
+                    <LayoutDashboard className="h-4 w-4 text-slate-500" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator className="my-1 bg-slate-100" />
+              </div>
 
               <DropdownMenuItem
                 className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-slate-100 cursor-pointer focus:bg-slate-100"
