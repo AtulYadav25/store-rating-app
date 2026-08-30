@@ -15,6 +15,7 @@ import AddUser from './pages/adminPages/AddUser'
 import AddStore from './pages/adminPages/AddStore'
 import EditStore from './pages/adminPages/EditStore'
 import OwnerDashboard from './pages/ownerPages/OwnerDashboard'
+import StoreList from './pages/adminPages/StoreList'
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/dashboard/admin/users" element={<AllUsers />} />
+            <Route path="/dashboard/admin/stores" element={<StoreList />} />
             <Route path="/dashboard/admin/add-user" element={<AddUser />} />
             <Route path="/dashboard/admin/add-store" element={<AddStore />} />
             <Route path="/dashboard/admin/edit-store/:storeId" element={<EditStore />} />

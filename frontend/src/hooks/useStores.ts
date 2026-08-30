@@ -4,6 +4,7 @@ import {
   getStore,
   addStore,
   editStore,
+  deleteStore,
   type GetStoresParams,
   type AddStoreData,
   type EditStoreData,
@@ -62,6 +63,20 @@ export const useEditStore = () => {
       queryClient.invalidateQueries({
         queryKey: [...STORES_QUERY_KEY, variables.storeId],
       });
+      queryClient.invalidateQueries({
+        queryKey: [...DASHBOARD_QUERY_KEY, "admin", "stats"],
+      });
+    },
+  });
+};
+
+export const useDeleteStore = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (storeId: string) => deleteStore(storeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STORES_QUERY_KEY });
       queryClient.invalidateQueries({
         queryKey: [...DASHBOARD_QUERY_KEY, "admin", "stats"],
       });

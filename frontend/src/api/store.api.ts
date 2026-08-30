@@ -74,3 +74,12 @@ export const editStore = async (
   const response = await api.put<APIResponse<Store>>(`/store/${storeId}`, data);
   return response.data;
 };
+
+export const deleteStore = async (
+  storeId: string
+): Promise<APIResponse<Record<string, never>>> => {
+  const response = await api.delete<APIResponse<Record<string, never>>>(
+    `/store/${storeId}`
+  );
+  return response.data;
+};
