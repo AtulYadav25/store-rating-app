@@ -2,6 +2,7 @@ import { prisma } from "../lib/prisma.js";
 import type { Prisma } from "../generated/prisma/client.js";
 import type { Request, Response } from "express";
 import { errorResponse, paginationResponse, successResponse } from "../utils/responseHandler.js";
+import { ROLES } from "../constants/ROLES.js";
 
 export const getStores = async (req: Request, res: Response) => {
     try {
@@ -41,8 +42,21 @@ export const getStores = async (req: Request, res: Response) => {
             }
             : {};
 
+        const isAdmin = req.user?.role === ROLES.ADMIN;
+
         const stores = await prisma.store.findMany({
             where,
+            ...(isAdmin && {
+                include: {
+                    owner: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        },
+                    },
+                },
+            }),
             take: limitNumber,
             skip: (pageNumber - 1) * limitNumber,
             orderBy: {
@@ -266,5 +280,38 @@ export const editStore = async (req: Request, res: Response) => {
 
     } catch (error) {
         return errorResponse(res, "Failed to update store", 500, error);
+    }
+};
+
+export const deleteStore = async (req: Request, res: Response) => {
+    try {
+        const storeId = req.params.storeId as string;
+
+        if (!storeId) {
+            return errorResponse(res, "Store ID is required", 400);
+        }
+
+        const existingStore = await prisma.store.findUnique({
+            where: { id: storeId },
+        });
+
+        if (!existingStore) {
+            return errorResponse(res, "Store not found", 404);
+        }
+
+        // Delete all ratings of the store and delete the store in a transaction
+        await prisma.$transaction([
+            prisma.rating.deleteMany({
+                where: { storeId },
+            }),
+            prisma.store.delete({
+                where: { id: storeId },
+            }),
+        ]);
+
+        return successResponse(res, null, "Store and all associated ratings deleted successfully", 200);
+
+    } catch (error) {
+        return errorResponse(res, "Failed to delete store", 500, error);
     }
 };
