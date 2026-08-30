@@ -6,6 +6,16 @@ A full-stack store rating platform featuring Role-Based Access Control (RBAC), i
   <img src="https://gcdnb.pbrd.co/images/ggVBKygVZntU.gif" alt="Store Rating App Demo" width="100%" />
 </p>
 
+## Architecture & Engineering Highlights
+
+This project was architected from scratch to demonstrate production-grade full-stack patterns:
+
+- **Modular Full-Stack Architecture**: Decoupled Express + TypeScript backend (routes, controllers, middlewares, Prisma) paired with fail-fast Zod environment validation at startup.
+- **End-to-End Type Safety & Contracts**: Strict Zod runtime validation on payloads, consistent API response formats (`successResponse`, `errorResponse`, `paginationResponse`), and unified TypeScript type inference.
+- **Atomic $O(1)$ Rating Engine**: Relational PostgreSQL design using composite unique keys (`userId_storeId`), targeted indexing, and atomic transactions (`prisma.$transaction`) for real-time incremental average calculation.
+- **Full-Stack RBAC Security**: Multi-tier access control (Admin, Store Owner, User) enforced via `HttpOnly` JWT cookies, backend role middleware (`hasRole`), and client-side route guards.
+- **Modern State Management & DX**: TanStack Query for declarative caching, smooth pagination (`keepPreviousData`), and automated query invalidation, fully containerized with Docker Compose.
+
 ## Features
 
 - **Role-Based Access Control (RBAC)**: Unified authentication system supporting System Administrator, Store Owner, and Normal User roles.
