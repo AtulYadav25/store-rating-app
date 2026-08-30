@@ -27,6 +27,8 @@ model User {
   @@index([name])
   @@index([email])
   @@index([role])
+  @@index([address])
+  @@index([createdAt])
 }
 
 model Store {
@@ -49,6 +51,9 @@ model Store {
   @@index([name])
   @@index([email])
   @@index([address])
+  @@index([ownerId])
+  @@index([avgRating])
+  @@index([createdAt])
 }
 
 model Rating {
@@ -64,4 +69,6 @@ model Rating {
 
   @@unique([userId, storeId])
   @@index([storeId, createdAt])
+  @@index([userId])
+  @@index([rating])
 }

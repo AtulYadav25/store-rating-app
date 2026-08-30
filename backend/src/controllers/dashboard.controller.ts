@@ -12,6 +12,8 @@ const getUsersQuerySchema = z.object({
     name: z.string().trim().optional(),
     email: z.string().trim().optional(),
     address: z.string().trim().optional(),
+    sortBy: z.enum(["name", "email", "address", "role", "createdAt"]).optional().default("createdAt"),
+    sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
 export const adminDashboard = async (req: Request, res: Response) => {
@@ -41,7 +43,7 @@ export const getUsers = async (req: Request, res: Response) => {
             return errorResponse(res, "Invalid query parameters", 400, queryValidation.error.flatten());
         }
 
-        const { page, limit, role, name, email, address } = queryValidation.data;
+        const { page, limit, role, name, email, address, sortBy, sortOrder } = queryValidation.data;
 
         const where: Prisma.UserWhereInput = {
             ...(role && { role }),
@@ -69,7 +71,7 @@ export const getUsers = async (req: Request, res: Response) => {
                 },
             },
             orderBy: {
-                createdAt: "desc",
+                [sortBy]: sortOrder,
             },
             take: limit,
             skip: (page - 1) * limit,
@@ -154,7 +156,7 @@ export const getUsersWithRatings = async (req: Request, res: Response) => {
             return errorResponse(res, "Unauthorized", 401);
         }
 
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = req.query;
 
         const pageNumber = parseInt(page as string, 10);
         const limitNumber = parseInt(limit as string, 10);
@@ -162,6 +164,9 @@ export const getUsersWithRatings = async (req: Request, res: Response) => {
         if (Number.isNaN(pageNumber) || Number.isNaN(limitNumber) || pageNumber < 1 || limitNumber < 1) {
             return errorResponse(res, "Invalid pagination parameters", 400);
         }
+
+        const validSortBy = sortBy === "rating" ? "rating" : "createdAt";
+        const validSortOrder = sortOrder === "asc" ? "asc" : "desc";
 
         const store = await prisma.store.findFirst({
             where: { ownerId },
@@ -208,7 +213,7 @@ export const getUsersWithRatings = async (req: Request, res: Response) => {
                 },
             },
             orderBy: {
-                createdAt: "desc",
+                [validSortBy]: validSortOrder,
             },
             take: limitNumber,
             skip: (pageNumber - 1) * limitNumber,

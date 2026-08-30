@@ -7,7 +7,7 @@ import { ROLES } from "../constants/ROLES.js";
 export const getStores = async (req: Request, res: Response) => {
     try {
         // Get query parameters
-        const { page = 1, limit = 15, search } = req.query;
+        const { page = 1, limit = 15, search, sortBy = "createdAt", sortOrder = "desc" } = req.query;
 
         const pageNumber = parseInt(page as string, 10);
         const limitNumber = parseInt(limit as string, 10);
@@ -20,6 +20,10 @@ export const getStores = async (req: Request, res: Response) => {
         ) {
             return errorResponse(res, "Invalid query parameters", 400);
         }
+
+        const allowedSortFields = ["name", "email", "address", "avgRating", "ratingCount", "createdAt"];
+        const validSortBy = typeof sortBy === "string" && allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+        const validSortOrder = sortOrder === "asc" ? "asc" : "desc";
 
         const searchTerm = typeof search === "string" ? search.trim() : "";
 
@@ -60,7 +64,7 @@ export const getStores = async (req: Request, res: Response) => {
             take: limitNumber,
             skip: (pageNumber - 1) * limitNumber,
             orderBy: {
-                createdAt: "desc",
+                [validSortBy]: validSortOrder,
             },
         });
 
