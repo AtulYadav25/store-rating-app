@@ -12,6 +12,6 @@ router.get('/:storeId', protectRoute, getStoreRatings);
 
 router.post('/:storeId', protectRoute, giveRating);
 
-router.delete('/:ratingId', protectRoute, deleteRating);
+router.delete('/:storeId', protectRoute, deleteRating);
 
 export default router;

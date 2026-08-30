@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useStore } from "../hooks/useStores";
-import { useStoreRatings, useSubmitRating } from "../hooks/useRatings";
+import { useStoreRatings, useSubmitRating, useDeleteRating } from "../hooks/useRatings";
 import { useCurrentUser } from "../hooks/useAuth";
 import { ROLES } from "../constants/ROLES";
 import { AspectRatio } from "../components/ui/aspect-ratio";
@@ -24,6 +24,7 @@ import {
     Calendar,
     AlertCircle,
     Edit,
+    Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useState } from "react";
@@ -60,6 +61,9 @@ const StoreDetails: React.FC = () => {
     const { mutate: submitRatingMutation, isPending: isSubmittingRating } =
         useSubmitRating();
 
+    const { mutate: deleteRatingMutation, isPending: isDeletingRating } =
+        useDeleteRating();
+
     const store = storeResponse?.data;
     const ratings = ratingsResponse?.data || [];
     const ratingsMeta = ratingsResponse?.meta;
@@ -94,6 +98,24 @@ const StoreDetails: React.FC = () => {
                 },
             }
         );
+    };
+
+    const handleRatingDelete = () => {
+        if (!storeId || !userCurrentRating) return;
+
+        deleteRatingMutation(storeId, {
+            onSuccess: () => {
+                toast.success("Rating removed successfully!");
+                setHoverRating(0);
+            },
+            onError: (err: any) => {
+                const msg =
+                    err?.response?.data?.message ||
+                    err?.response?.data?.error ||
+                    "Failed to remove rating.";
+                toast.error(typeof msg === "string" ? msg : "Failed to remove rating");
+            },
+        });
     };
 
 
@@ -238,14 +260,41 @@ const StoreDetails: React.FC = () => {
             {/* Rate This Store Interactive Section */}
             <Card className="border-slate-200 bg-white shadow-xs">
                 <CardHeader className="pb-3 border-b border-slate-100">
-                    <CardTitle className="text-base font-semibold text-slate-900">
-                        {userCurrentRating ? "Your Rating" : "Rate This Store"}
-                    </CardTitle>
-                    <CardDescription className="text-xs text-slate-500">
-                        {userCurrentRating
-                            ? "You have rated this store. Click any star to modify your rating."
-                            : "Share your experience by leaving a rating between 1 and 5 stars"}
-                    </CardDescription>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="space-y-0.5">
+                            <CardTitle className="text-base font-semibold text-slate-900">
+                                {userCurrentRating ? "Your Rating" : "Rate This Store"}
+                            </CardTitle>
+                            <CardDescription className="text-xs text-slate-500">
+                                {userCurrentRating
+                                    ? "You have rated this store. Click any star to modify or remove your rating."
+                                    : "Share your experience by leaving a rating between 1 and 5 stars"}
+                            </CardDescription>
+                        </div>
+
+                        {userCurrentRating && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleRatingDelete}
+                                disabled={isSubmittingRating || isDeletingRating}
+                                className="h-8 gap-1.5 text-xs font-semibold text-rose-600 border-rose-200 bg-rose-50/50 hover:bg-rose-100/70 hover:text-rose-700 hover:border-rose-300 transition-colors shrink-0 self-start sm:self-auto cursor-pointer"
+                            >
+                                {isDeletingRating ? (
+                                    <>
+                                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-rose-600 border-t-transparent" />
+                                        <span>Removing...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+                                        <span>Remove Rating</span>
+                                    </>
+                                )}
+                            </Button>
+                        )}
+                    </div>
                 </CardHeader>
 
                 <CardContent className="p-6">
@@ -255,11 +304,11 @@ const StoreDetails: React.FC = () => {
                                 <button
                                     key={star}
                                     type="button"
-                                    disabled={isSubmittingRating}
+                                    disabled={isSubmittingRating || isDeletingRating}
                                     onMouseEnter={() => setHoverRating(star)}
                                     onMouseLeave={() => setHoverRating(0)}
                                     onClick={() => handleRatingSubmit(star)}
-                                    className="p-1.5 rounded-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
+                                    className="p-1.5 rounded-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-400/40 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
                                 >
                                     <Star
@@ -280,10 +329,10 @@ const StoreDetails: React.FC = () => {
                             </span>
                         </div>
 
-                        {isSubmittingRating && (
+                        {(isSubmittingRating || isDeletingRating) && (
                             <span className="text-xs text-slate-500 flex items-center gap-1.5">
                                 <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                                Submitting...
+                                {isDeletingRating ? "Removing rating..." : "Saving rating..."}
                             </span>
                         )}
                     </div>

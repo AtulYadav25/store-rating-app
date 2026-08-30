@@ -3,6 +3,7 @@ import {
   getStoreRatings,
   submitRating,
   updateRating,
+  deleteRating,
   type GetStoreRatingsParams,
   type SubmitRatingData,
 } from "../api/rating.api";
@@ -52,3 +53,17 @@ export const useUpdateRating = () => {
     },
   });
 };
+
+export const useDeleteRating = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (storeId: string) => deleteRating(storeId),
+    onSuccess: (_, storeId) => {
+      queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, storeId] });
+      queryClient.invalidateQueries({ queryKey: [...STORES_QUERY_KEY, storeId] });
+      queryClient.invalidateQueries({ queryKey: STORES_QUERY_KEY });
+    },
+  });
+};
+

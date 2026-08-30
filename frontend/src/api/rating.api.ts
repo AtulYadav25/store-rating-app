@@ -66,3 +66,11 @@ export const updateRating = async ({
   });
   return response.data;
 };
+
+export const deleteRating = async (
+  storeId: string
+): Promise<APIResponse<null>> => {
+  const response = await api.delete<APIResponse<null>>(`/rating/${storeId}`);
+  return response.data;
+};
+

@@ -161,19 +161,24 @@ export const giveRating = async (req: Request, res: Response) => {
 
 export const deleteRating = async (req: Request, res: Response) => {
     try {
-        const ratingId = req.params.ratingId as string;
+        const storeId = req.params.storeId as string;
         const userId = req.user?.id;
 
         if (!userId) {
             return errorResponse(res, "Unauthorized", 401);
         }
 
-        if (!ratingId) {
-            return errorResponse(res, "Rating ID is required", 400);
+        if (!storeId) {
+            return errorResponse(res, "Store ID is required", 400);
         }
 
         const existingRating = await prisma.rating.findUnique({
-            where: { id: ratingId },
+            where: {
+                userId_storeId: {
+                    userId,
+                    storeId,
+                },
+            },
             include: {
                 store: {
                     select: { id: true, avgRating: true, ratingCount: true },
@@ -183,10 +188,6 @@ export const deleteRating = async (req: Request, res: Response) => {
 
         if (!existingRating) {
             return errorResponse(res, "Rating not found", 404);
-        }
-
-        if (existingRating.userId !== userId && req.user?.role !== ROLES.ADMIN) {
-            return errorResponse(res, "Forbidden: You can only delete your own rating", 403);
         }
 
         const store = existingRating.store;
@@ -202,10 +203,15 @@ export const deleteRating = async (req: Request, res: Response) => {
         // Atomically delete rating and update store stats
         await prisma.$transaction([
             prisma.rating.delete({
-                where: { id: ratingId },
+                where: {
+                    userId_storeId: {
+                        userId,
+                        storeId,
+                    },
+                },
             }),
             prisma.store.update({
-                where: { id: existingRating.storeId },
+                where: { id: storeId },
                 data: {
                     avgRating: newAvgRating,
                     ratingCount: newRatingCount,
