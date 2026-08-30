@@ -21,9 +21,10 @@ A full-stack store rating platform featuring Role-Based Access Control (RBAC), i
 - **Backend**: ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 - **Frontend**: ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white) ![TanStack Query](https://img.shields.io/badge/TanStack%20Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white)
 - **Database & ORM**: ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white) ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+- **Containers (PostgreSQL) & API Testing**: ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white)
 - **Security & Validation**: JWT, bcrypt, Zod, cookie-parser
 - **UI Components**: Radix UI, Lucide Icons, React Hot Toast, ShadCN UI
-- **Containers (PostgreSQL) & API Testing**: ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white)
+
 
 ## Project Structure
 
@@ -51,10 +52,10 @@ store-rating-app/
 │   └── src/
 │       ├── App.tsx
 │       ├── main.tsx
-│       ├── api/
-│       ├── components/
+│       ├── api/               # Axios API clients & endpoints
+│       ├── components/        # Reusable UI components & ShadCN UI Components
 │       ├── constants/
-│       ├── hooks/
+│       ├── hooks/             # TanStack Query hooks (queries & mutations)
 │       └── pages/
 └── Store-Rating-App.postman_collection.json
 ```
